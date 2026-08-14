@@ -1313,6 +1313,21 @@ fun ReaderWebView(
             if (shouldResume) sasayakiPlayer?.resumeAfterAutoPageHold()
         }
     }
+    suspend fun armSasayakiScreenEndStop(cue: SasayakiMatch) {
+        if (!sasayakiSettings.pauseAtScreenEnd) return
+        if (effectiveSettings.viewMode != ReaderViewMode.VisualNovel) return
+        val player = sasayakiPlayer ?: return
+        if (!player.isPlaying) return
+        val lastCueId = ReaderPaginationScripts.jsonStringResult(
+            evaluateReaderJavascript(
+                ReaderPaginationScripts.lastSasayakiCueIdOnSameScreenAsInvocation(cue.toCueRange()),
+            ),
+        )
+        val lastCue = lastCueId
+            ?.let { id -> sasayakiMatchData?.matches?.firstOrNull { match -> match.id == id } }
+            ?: cue
+        player.armScreenEndStop(lastCue)
+    }
     fun dispatchSasayakiCueToReader(
         cue: SasayakiMatch,
         reveal: Boolean,
@@ -1336,21 +1351,6 @@ fun ReaderWebView(
             }
             armSasayakiScreenEndStop(cue)
         }
-    }
-    suspend fun armSasayakiScreenEndStop(cue: SasayakiMatch) {
-        if (!sasayakiSettings.pauseAtScreenEnd) return
-        if (effectiveSettings.viewMode != ReaderViewMode.VisualNovel) return
-        val player = sasayakiPlayer ?: return
-        if (!player.isPlaying) return
-        val lastCueId = ReaderPaginationScripts.jsonStringResult(
-            evaluateReaderJavascript(
-                ReaderPaginationScripts.lastSasayakiCueIdOnSameScreenAsInvocation(cue.toCueRange()),
-            ),
-        )
-        val lastCue = lastCueId
-            ?.let { id -> sasayakiMatchData?.matches?.firstOrNull { match -> match.id == id } }
-            ?: cue
-        player.armScreenEndStop(lastCue)
     }
     LaunchedEffect(
         webView,
