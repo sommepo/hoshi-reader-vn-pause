@@ -2021,6 +2021,25 @@ window.hoshiReader = {
     }
     return lastId;
   },
+  firstSasayakiCueIdOnCurrentScreen: function() {
+    var screen = this.screens && this.screens[this.currentScreenIndex];
+    if (!screen) return null;
+    var firstId = null;
+    var firstStart = Infinity;
+    var firstEnd = Infinity;
+    for (var i = 0; i < this.sasayakiCues.length; i++) {
+      var candidate = this.sasayakiCueForInput(this.sasayakiCues[i]);
+      if (!candidate || !candidate.id || !this.sasayakiCueIntersectsScreen(candidate, screen)) continue;
+      var candidateStart = this.sasayakiCueStart(candidate);
+      var candidateEnd = this.sasayakiCueEnd(candidate);
+      if (candidateStart < firstStart || (candidateStart === firstStart && candidateEnd < firstEnd)) {
+        firstStart = candidateStart;
+        firstEnd = candidateEnd;
+        firstId = candidate.id;
+      }
+    }
+    return firstId;
+  },
   screenIndexForSasayakiCue: function(cue) {
     if (!cue || !this.screens || !this.screens.length) return -1;
     var start = this.sasayakiCueStart(cue);

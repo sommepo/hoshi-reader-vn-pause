@@ -40,6 +40,9 @@ internal object ReaderPaginationScripts {
     fun lastSasayakiCueIdOnSameScreenAsInvocation(cue: SasayakiCueRange): String =
         "window.hoshiReader.lastSasayakiCueIdOnSameScreenAs(${cue.toJavaScriptObjectLiteral()})"
 
+    fun firstSasayakiCueIdOnCurrentScreenInvocation(): String =
+        "window.hoshiReader.firstSasayakiCueIdOnCurrentScreen()"
+
     fun sasayakiMediaStopsBeforeCueInvocation(cue: SasayakiCueRange): String =
         "window.hoshiReader.sasayakiMediaStopsBeforeCue(${cue.toJavaScriptObjectLiteral()})"
 

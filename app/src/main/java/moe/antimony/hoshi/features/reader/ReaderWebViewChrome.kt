@@ -31,6 +31,7 @@ import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.Palette
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Replay
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.TravelExplore
 import androidx.compose.material.icons.rounded.Tune
@@ -552,7 +553,7 @@ internal fun ReaderBottomSafeProgress(
         if (sasayakiPlaybackControls.visible) {
             Row(
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
+                    .align(Alignment.BottomStart)
                     .padding(start = sasayakiPlaybackControls.horizontalPaddingDp.dp)
                     .height(sasayakiPlaybackControls.rowHeightDp.dp),
                 verticalAlignment = Alignment.CenterVertically,
@@ -560,8 +561,18 @@ internal fun ReaderBottomSafeProgress(
                 ReaderBottomSafePlaybackButton(
                     controls = sasayakiPlaybackControls,
                     colors = colors,
-                    icon = Icons.Rounded.FastRewind,
-                    contentDescription = stringResource(R.string.sasayaki_rewind),
+                    icon = if (sasayakiPlaybackControls.bindAudioToVisibleScreen) {
+                        Icons.Rounded.Replay
+                    } else {
+                        Icons.Rounded.FastRewind
+                    },
+                    contentDescription = stringResource(
+                        if (sasayakiPlaybackControls.bindAudioToVisibleScreen) {
+                            R.string.sasayaki_replay_current_screen
+                        } else {
+                            R.string.sasayaki_rewind
+                        },
+                    ),
                     onClick = onSasayakiSkipBackward,
                 )
                 ReaderBottomSafePlaybackButton(
@@ -579,7 +590,13 @@ internal fun ReaderBottomSafeProgress(
                     controls = sasayakiPlaybackControls,
                     colors = colors,
                     icon = Icons.Rounded.FastForward,
-                    contentDescription = stringResource(R.string.sasayaki_fast_forward),
+                    contentDescription = stringResource(
+                        if (sasayakiPlaybackControls.bindAudioToVisibleScreen) {
+                            R.string.sasayaki_next_screen
+                        } else {
+                            R.string.sasayaki_fast_forward
+                        },
+                    ),
                     onClick = onSasayakiSkipForward,
                 )
             }

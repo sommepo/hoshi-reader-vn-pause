@@ -917,15 +917,44 @@ fun ReaderWebView(
             closeLookupPopupsAndSelection()
         }
     }
-    fun handleSasayakiVnBlankTap(): Boolean {
-        if (!sasayakiSettings.pauseAtScreenEnd) return false
-        if (effectiveSettings.viewMode != ReaderViewMode.VisualNovel) return false
-        val player = sasayakiPlayer ?: return false
-        if (player.isWaitingForContinue) {
-            player.continueAfterScreenEnd()
-            return true
+    fun handleSasayakiVnBlankTap(): SasayakiVnBlankTapResult {
+        val result = sasayakiVnBlankTapResult(
+            pauseAtScreenEnd = sasayakiSettings.pauseAtScreenEnd,
+            viewMode = effectiveSettings.viewMode,
+            hasPlayer = sasayakiPlayer != null,
+            waitingForContinue = sasayakiPlayer?.isWaitingForContinue == true,
+            lookupVisible = stateHolder.lookupPopups.isNotEmpty(),
+        )
+        if (result == SasayakiVnBlankTapResult.TogglePlayback) {
+            sasayakiPlayer?.togglePlayback()
         }
-        return player.isPlaying && effectiveSettings.visualNovelClickAdvance
+        return result
+    }
+    fun playSasayakiForCurrentVnScreen() {
+        val player = sasayakiPlayer ?: return
+        scope.launch {
+            val firstCueId = ReaderPaginationScripts.jsonStringResult(
+                evaluateReaderJavascript(
+                    ReaderPaginationScripts.firstSasayakiCueIdOnCurrentScreenInvocation(),
+                ),
+            ) ?: return@launch
+            val cue = sasayakiMatchData?.matches?.firstOrNull { match -> match.id == firstCueId }
+                ?: return@launch
+            player.playCue(cue, stop = false)
+        }
+    }
+    fun advanceVisibleVnScreenAndPlay() {
+        val targetWebView = webView ?: return
+        targetWebView.navigatePageForDirection(
+            direction = ReaderNavigationDirection.Forward,
+            onNextChapter = { goToNextChapter() },
+            onPreviousChapter = { goToPreviousChapter() },
+            onDisplayedProgress = { progress ->
+                displayPagedTurnProgress(progress)
+                playSasayakiForCurrentVnScreen()
+            },
+            onSaveProgress = { saveDisplayedProgress(it) },
+        )
     }
     val chromeState = remember(
         book,
@@ -1576,16 +1605,36 @@ fun ReaderWebView(
         settings = sasayakiSettings,
         hasAudio = sasayakiPlayer?.hasAudio == true,
         metrics = bottomChromeMetrics,
+        viewMode = effectiveSettings.viewMode,
     )
     val sasayakiBottomSkipButtonActions = readerSasayakiBottomSkipButtonActions(
         verticalWriting = effectiveSettings.verticalWriting,
         reverseVerticalReaderSkipButtons = sasayakiSettings.reverseVerticalReaderSkipButtons,
     )
+    val sasayakiScreenBoundControls = sasayakiBindsAudioToVisibleVnScreen(
+        pauseAtScreenEnd = sasayakiSettings.pauseAtScreenEnd,
+        viewMode = effectiveSettings.viewMode,
+        hasPlayer = sasayakiPlayer != null,
+    )
     fun performSasayakiBottomSkipAction(action: ReaderSasayakiBottomSkipButtonAction) {
+        if (sasayakiScreenBoundControls) {
+            when (action) {
+                ReaderSasayakiBottomSkipButtonAction.Backward -> playSasayakiForCurrentVnScreen()
+                ReaderSasayakiBottomSkipButtonAction.Forward -> advanceVisibleVnScreenAndPlay()
+            }
+            return
+        }
         when (action) {
             ReaderSasayakiBottomSkipButtonAction.Backward -> sasayakiPlayer?.previousCue()
             ReaderSasayakiBottomSkipButtonAction.Forward -> sasayakiPlayer?.nextCue()
         }
+    }
+    fun handleSasayakiTogglePlayback() {
+        if (sasayakiScreenBoundControls && sasayakiPlayer?.isWaitingForContinue == true) {
+            advanceVisibleVnScreenAndPlay()
+            return
+        }
+        sasayakiPlayer?.togglePlayback()
     }
     val showSasayakiTopToggle = sasayakiSettings.enabled &&
         sasayakiSettings.showReaderToggle &&
@@ -1764,6 +1813,7 @@ fun ReaderWebView(
                         onClearLookupPopup = ::closeLookupPopupsAndSelection,
                         onReaderTapOutside = ::handleReaderTapOutside,
                         onSasayakiVnBlankTap = ::handleSasayakiVnBlankTap,
+                        onSasayakiVnAdvanceScreen = ::advanceVisibleVnScreenAndPlay,
                         onReaderInteraction = ::handleReaderInteraction,
                         onImageTapped = ::openFullscreenImage,
                         onHighlightCreated = ::addHighlight,
@@ -1848,7 +1898,7 @@ fun ReaderWebView(
             sasayakiPlaying = sasayakiPlayer?.isPlaying == true,
             onTapSafeArea = ::handleReaderTapOutside,
             onSasayakiSkipBackward = { performSasayakiBottomSkipAction(sasayakiBottomSkipButtonActions.left) },
-            onSasayakiTogglePlayback = { sasayakiPlayer?.togglePlayback() },
+            onSasayakiTogglePlayback = ::handleSasayakiTogglePlayback,
             onSasayakiSkipForward = { performSasayakiBottomSkipAction(sasayakiBottomSkipButtonActions.right) },
             modifier = Modifier.align(Alignment.BottomCenter),
         )

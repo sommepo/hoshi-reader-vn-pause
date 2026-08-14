@@ -669,6 +669,8 @@
     <string name="sasayaki_play">Play Sasayaki</string>
     <string name="sasayaki_rewind">Sasayaki Rewind</string>
     <string name="sasayaki_fast_forward">Sasayaki Fast-forward</string>
+    <string name="sasayaki_replay_current_screen">Replay current screen</string>
+    <string name="sasayaki_next_screen">Next screen</string>
     <string name="sasayaki_replay_cue">Replay Sasayaki Cue</string>
     <string name="sasayaki_play_from_cue">Play From Sasayaki Cue</string>
     <string name="sasayaki_import_audiobook_failed">Unable to import audiobook.</string>
@@ -681,6 +683,9 @@
     <string name="sasayaki_reader_controls">Reader Controls</string>
     <string name="sasayaki_show_bottom_playback_controls">Pin Playback Controls to Safe Area</string>
     <string name="sasayaki_show_bottom_playback_controls_help">Show rewind, play or pause, and fast-forward controls in the bottom safe area.</string>
+    <string name="sasayaki_bottom_playback_control_size">Playback Control Size</string>
+    <string name="sasayaki_bottom_playback_control_size_help">Resize the bottom-left rewind, play, and fast-forward buttons.</string>
+    <string name="sasayaki_bottom_playback_control_size_format">%1$.2f×</string>
     <string name="sasayaki_skip_action">Skip Action</string>
     <string name="sasayaki_reverse_vertical_skip_buttons">Reverse in Vertical</string>
     <string name="sasayaki_reverse_vertical_skip_buttons_help">In vertical writing, swap only the bottom reader skip button actions.</string>
@@ -689,7 +694,7 @@
     <string name="sasayaki_dark_theme">Dark Theme</string>
     <string name="sasayaki_auto_scroll">Auto-Scroll</string>
     <string name="sasayaki_pause_at_screen_end">Push to Continue</string>
-    <string name="sasayaki_pause_at_screen_end_help">In Visual Novel mode, pause when the current screen\'s audiobook finishes. Tap a blank area or press play to continue.</string>
+    <string name="sasayaki_pause_at_screen_end_help">In Visual Novel mode, pause when the current screen\'s audiobook finishes. Tap a blank area to pause or play, or to go to the next screen after that screen\'s audio ends. Tapping blank area while a dictionary lookup is open only closes the lookup.</string>
     <string name="sasayaki_image_hold">Image Hold</string>
     <string name="sasayaki_image_hold_help">Pause on illustrated pages during Sasayaki auto-scroll. Set to 0s to skip image holds.</string>
     <string name="sasayaki_image_hold_off" comment="Sasayaki image hold slider value for zero seconds; intentionally matches other off labels.">Off</string>

@@ -667,6 +667,8 @@
     <string name="sasayaki_play">播放有声书</string>
     <string name="sasayaki_rewind">有声书后退</string>
     <string name="sasayaki_fast_forward">有声书快进</string>
+    <string name="sasayaki_replay_current_screen">重播当前屏幕</string>
+    <string name="sasayaki_next_screen">下一屏</string>
     <string name="sasayaki_replay_cue">重播有声书句子</string>
     <string name="sasayaki_play_from_cue">从有声书句子播放</string>
     <string name="sasayaki_import_audiobook_failed">无法导入有声书。</string>
@@ -679,6 +681,9 @@
     <string name="sasayaki_reader_controls">阅读器控制</string>
     <string name="sasayaki_show_bottom_playback_controls">固定播放控制到底部安全区</string>
     <string name="sasayaki_show_bottom_playback_controls_help">在底部安全区显示后退、播放或暂停和快进控制。</string>
+    <string name="sasayaki_bottom_playback_control_size">播放控制大小</string>
+    <string name="sasayaki_bottom_playback_control_size_help">调整左下角后退、播放和快进按钮的大小。</string>
+    <string name="sasayaki_bottom_playback_control_size_format">%1$.2f×</string>
     <string name="sasayaki_skip_action">跳转操作</string>
     <string name="sasayaki_reverse_vertical_skip_buttons">纵排时反转</string>
     <string name="sasayaki_reverse_vertical_skip_buttons_help">纵排阅读时，仅交换阅读器底部跳转按钮的实际操作。</string>
@@ -687,7 +692,7 @@
     <string name="sasayaki_dark_theme">深色主题</string>
     <string name="sasayaki_auto_scroll">自动翻页</string>
     <string name="sasayaki_pause_at_screen_end">Push to Continue</string>
-    <string name="sasayaki_pause_at_screen_end_help">视觉小说模式下，当前屏幕的有声书结束后暂停。点击空白处或按播放继续。</string>
+    <string name="sasayaki_pause_at_screen_end_help">视觉小说模式下，当前屏幕的有声书结束后暂停。点击空白处可暂停或播放；当前屏音频结束后点击空白处进入下一屏。查词弹窗打开时，点击空白处只关闭弹窗。</string>
     <string name="sasayaki_image_hold">图片停留</string>
     <string name="sasayaki_image_hold_help">有声书自动翻页遇到插图页时暂停。设为 0 秒可跳过图片停留。</string>
     <string name="sasayaki_image_hold_off" comment="Sasayaki image hold slider value for zero seconds; intentionally matches other off labels.">关闭</string>

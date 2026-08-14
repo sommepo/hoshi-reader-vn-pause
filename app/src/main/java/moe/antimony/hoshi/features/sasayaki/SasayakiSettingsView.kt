@@ -46,6 +46,7 @@ import moe.antimony.hoshi.R
 import moe.antimony.hoshi.features.reader.ReaderColorPickerDialog
 import moe.antimony.hoshi.features.reader.ReaderColorSettingRow
 import moe.antimony.hoshi.features.settings.collectAsLoadedSettings
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -163,6 +164,13 @@ fun SasayakiSettingsView(
                                     )
                                 },
                             )
+                            SettingsDivider()
+                            SasayakiBottomPlaybackControlSizeRow(
+                                settings = loadedSettings,
+                                onValueChange = { scale ->
+                                    save(loadedSettings.copy(bottomPlaybackControlScale = scale))
+                                },
+                            )
                         }
                         SettingsDivider()
                         ListItem(
@@ -268,6 +276,40 @@ fun SasayakiSettingsView(
                 colorDialogRow = null
             },
             onDismiss = { colorDialogRow = null },
+        )
+    }
+}
+
+@Composable
+private fun SasayakiBottomPlaybackControlSizeRow(
+    settings: SasayakiSettings,
+    onValueChange: (Float) -> Unit,
+) {
+    val scale = normalizeSasayakiBottomPlaybackControlScale(settings.bottomPlaybackControlScale)
+    Column {
+        ListItem(
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            headlineContent = { Text(stringResource(R.string.sasayaki_bottom_playback_control_size)) },
+            supportingContent = { Text(stringResource(R.string.sasayaki_bottom_playback_control_size_help)) },
+            trailingContent = {
+                Text(
+                    text = String.format(
+                        Locale.US,
+                        stringResource(R.string.sasayaki_bottom_playback_control_size_format),
+                        scale,
+                    ),
+                    fontWeight = FontWeight.SemiBold,
+                )
+            },
+        )
+        Slider(
+            value = scale,
+            onValueChange = { onValueChange(normalizeSasayakiBottomPlaybackControlScale(it)) },
+            valueRange = SasayakiBottomPlaybackControlMinScale..SasayakiBottomPlaybackControlMaxScale,
+            steps = SasayakiBottomPlaybackControlScaleSliderSteps,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
         )
     }
 }

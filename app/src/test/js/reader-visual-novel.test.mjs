@@ -2518,4 +2518,5 @@ test('visual novel last Sasayaki cue on a screen is the last intersecting cue', 
 
     assert.equal(reader.lastSasayakiCueIdOnSameScreenAs(first), 'cue-b');
     assert.equal(reader.lastSasayakiCueIdOnSameScreenAs(second), 'cue-b');
+    assert.equal(reader.firstSasayakiCueIdOnCurrentScreen(), 'cue-a');
 });

@@ -84,6 +84,7 @@ class SasayakiSettingsRepositoryTest {
             copyAudiobookToPrivateStorage = true,
             autoScroll = false,
             pauseAtScreenEnd = false,
+            bottomPlaybackControlScale = 2.25f,
             autoPause = false,
             imageHoldSeconds = 4.5f,
             lightTextColor = 0xFF010203,
@@ -111,6 +112,14 @@ class SasayakiSettingsRepositoryTest {
         assertEquals(500L, sasayakiImageHoldMillis(0.5f))
         assertEquals(1500L, sasayakiImageHoldMillis(1.5f))
         assertEquals(5000L, sasayakiImageHoldMillis(5f))
+    }
+
+    @Test
+    fun bottomPlaybackControlScaleUsesQuarterSteps() {
+        assertEquals(5, SasayakiBottomPlaybackControlScaleSliderSteps)
+        assertEquals(1f, normalizeSasayakiBottomPlaybackControlScale(0.8f), 0f)
+        assertEquals(1.75f, normalizeSasayakiBottomPlaybackControlScale(1.7f), 0f)
+        assertEquals(2.5f, normalizeSasayakiBottomPlaybackControlScale(3f), 0f)
     }
 
     @Test

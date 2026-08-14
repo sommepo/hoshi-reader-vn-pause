@@ -615,36 +615,41 @@ class ReaderChromeTest {
         assertEquals(
             ReaderSasayakiBottomPlaybackControls(
                 visible = true,
-                rowHeightDp = metrics.bottomSafeAreaDp,
+                rowHeightDp = 40,
                 buttonWidthDp = 52,
                 iconSizeDp = 20,
                 horizontalPaddingDp = 18,
+                bindAudioToVisibleScreen = false,
             ),
             readerSasayakiBottomPlaybackControls(
-                settings = SasayakiSettings(showReaderBottomPlaybackControls = true),
+                settings = SasayakiSettings(
+                    showReaderBottomPlaybackControls = true,
+                    bottomPlaybackControlScale = 1f,
+                ),
                 hasAudio = true,
                 metrics = metrics,
             ),
         )
         assertFalse(
             readerSasayakiBottomPlaybackControls(
-                settings = SasayakiSettings(showReaderBottomPlaybackControls = false),
+                settings = SasayakiSettings(
+                    showReaderBottomPlaybackControls = false,
+                    bottomPlaybackControlScale = 1f,
+                ),
                 hasAudio = true,
                 metrics = metrics,
             ).visible,
         )
         assertFalse(
             readerSasayakiBottomPlaybackControls(
-                settings = SasayakiSettings(showReaderBottomPlaybackControls = true),
+                settings = SasayakiSettings(
+                    showReaderBottomPlaybackControls = true,
+                    bottomPlaybackControlScale = 1f,
+                ),
                 hasAudio = false,
                 metrics = metrics,
             ).visible,
         )
-        assertTrue(readerSasayakiBottomPlaybackControls(
-            settings = SasayakiSettings(showReaderBottomPlaybackControls = true),
-            hasAudio = true,
-            metrics = metrics,
-        ).rowHeightDp <= metrics.bottomSafeAreaDp)
     }
 
     @Test
@@ -652,13 +657,17 @@ class ReaderChromeTest {
         assertEquals(
             ReaderSasayakiBottomPlaybackControls(
                 visible = true,
-                rowHeightDp = 18,
+                rowHeightDp = 40,
                 buttonWidthDp = 40,
-                iconSizeDp = 14,
+                iconSizeDp = 18,
                 horizontalPaddingDp = 18,
+                bindAudioToVisibleScreen = false,
             ),
             readerSasayakiBottomPlaybackControls(
-                settings = SasayakiSettings(showReaderBottomPlaybackControls = true),
+                settings = SasayakiSettings(
+                    showReaderBottomPlaybackControls = true,
+                    bottomPlaybackControlScale = 1f,
+                ),
                 hasAudio = true,
                 metrics = readerBottomChromeMetrics(bottomSafeAreaDp = 18),
             ),
@@ -670,13 +679,38 @@ class ReaderChromeTest {
                 buttonWidthDp = 72,
                 iconSizeDp = 28,
                 horizontalPaddingDp = 18,
+                bindAudioToVisibleScreen = false,
             ),
             readerSasayakiBottomPlaybackControls(
-                settings = SasayakiSettings(showReaderBottomPlaybackControls = true),
+                settings = SasayakiSettings(
+                    showReaderBottomPlaybackControls = true,
+                    bottomPlaybackControlScale = 1f,
+                ),
                 hasAudio = true,
                 metrics = readerBottomChromeMetrics(bottomSafeAreaDp = 72),
             ),
         )
+    }
+
+    @Test
+    fun sasayakiBottomPlaybackControlsHonorUserScaleAndCanOutgrowSafeArea() {
+        val metrics = readerBottomChromeMetrics(bottomSafeAreaDp = 40)
+        val controls = readerSasayakiBottomPlaybackControls(
+            settings = SasayakiSettings(
+                showReaderBottomPlaybackControls = true,
+                bottomPlaybackControlScale = 2f,
+                pauseAtScreenEnd = true,
+            ),
+            hasAudio = true,
+            metrics = metrics,
+            viewMode = ReaderViewMode.VisualNovel,
+        )
+
+        assertEquals(80, controls.rowHeightDp)
+        assertEquals(96, controls.buttonWidthDp)
+        assertEquals(40, controls.iconSizeDp)
+        assertTrue(controls.rowHeightDp > metrics.bottomSafeAreaDp)
+        assertTrue(controls.bindAudioToVisibleScreen)
     }
 
     @Test

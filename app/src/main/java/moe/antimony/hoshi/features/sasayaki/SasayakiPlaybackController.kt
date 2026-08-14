@@ -194,7 +194,6 @@ internal class SasayakiPlaybackController(
     override fun togglePlayback() {
         clearAutoPageHoldResume()
         if (playbackState.waitingForContinue) {
-            continueAfterScreenEnd()
             return
         }
         playbackCommands.toggle(
@@ -333,6 +332,7 @@ internal class SasayakiPlaybackController(
 
     override fun playCue(cue: SasayakiMatch, stop: Boolean) {
         clearAutoPageHoldResume()
+        playbackState.clearWaitingForContinue()
         withPreparedPlayback {
             playbackCommands.playCue(
                 cue = cue,

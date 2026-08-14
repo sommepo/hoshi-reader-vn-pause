@@ -5,6 +5,7 @@ import androidx.compose.material.icons.automirrored.rounded.Redo
 import androidx.compose.material.icons.automirrored.rounded.Undo
 import androidx.compose.ui.graphics.vector.ImageVector
 import java.util.Locale
+import kotlin.math.roundToInt
 
 data class ReaderChromeState(
     val title: String,
@@ -138,6 +139,7 @@ data class ReaderSasayakiBottomPlaybackControls(
     val buttonWidthDp: Int,
     val iconSizeDp: Int,
     val horizontalPaddingDp: Int,
+    val bindAudioToVisibleScreen: Boolean = false,
 )
 
 enum class ReaderSasayakiBottomSkipButtonAction {
@@ -351,14 +353,46 @@ fun readerSasayakiBottomPlaybackControls(
     settings: moe.antimony.hoshi.features.sasayaki.SasayakiSettings,
     hasAudio: Boolean,
     metrics: ReaderBottomChromeMetrics,
-): ReaderSasayakiBottomPlaybackControls =
-    ReaderSasayakiBottomPlaybackControls(
-        visible = settings.enabled && settings.showReaderBottomPlaybackControls && hasAudio,
-        rowHeightDp = metrics.bottomSafeAreaDp,
-        buttonWidthDp = readerSasayakiBottomPlaybackButtonWidthDp(metrics.bottomSafeAreaDp),
-        iconSizeDp = readerSasayakiBottomPlaybackIconSizeDp(metrics.bottomSafeAreaDp),
-        horizontalPaddingDp = 18,
+    viewMode: ReaderViewMode = ReaderViewMode.Paginated,
+): ReaderSasayakiBottomPlaybackControls {
+    val scale = moe.antimony.hoshi.features.sasayaki.normalizeSasayakiBottomPlaybackControlScale(
+        settings.bottomPlaybackControlScale,
     )
+    return ReaderSasayakiBottomPlaybackControls(
+        visible = settings.enabled && settings.showReaderBottomPlaybackControls && hasAudio,
+        rowHeightDp = scaledSasayakiBottomPlaybackDp(
+            baseDp = metrics.bottomSafeAreaDp,
+            scale = scale,
+            minDp = 40,
+            maxDp = 96,
+        ),
+        buttonWidthDp = scaledSasayakiBottomPlaybackDp(
+            baseDp = readerSasayakiBottomPlaybackButtonWidthDp(metrics.bottomSafeAreaDp),
+            scale = scale,
+            minDp = 40,
+            maxDp = 96,
+        ),
+        iconSizeDp = scaledSasayakiBottomPlaybackDp(
+            baseDp = readerSasayakiBottomPlaybackIconSizeDp(metrics.bottomSafeAreaDp),
+            scale = scale,
+            minDp = 18,
+            maxDp = 48,
+        ),
+        horizontalPaddingDp = 18,
+        bindAudioToVisibleScreen = sasayakiBindsAudioToVisibleVnScreen(
+            pauseAtScreenEnd = settings.pauseAtScreenEnd,
+            viewMode = viewMode,
+            hasPlayer = hasAudio,
+        ),
+    )
+}
+
+private fun scaledSasayakiBottomPlaybackDp(
+    baseDp: Int,
+    scale: Float,
+    minDp: Int,
+    maxDp: Int,
+): Int = (baseDp * scale).roundToInt().coerceIn(minDp, maxDp)
 
 private fun readerSasayakiBottomPlaybackButtonWidthDp(bottomSafeAreaDp: Int): Int =
     (bottomSafeAreaDp + 12).coerceIn(40, 72)

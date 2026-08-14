@@ -86,7 +86,8 @@ internal fun ChapterWebView(
     onTextSelected: (ReaderSelectionData, selectionRects: (Int, (List<ReaderSelectionRect>) -> Unit) -> Unit) -> Unit,
     onClearLookupPopup: () -> Unit,
     onReaderTapOutside: () -> Unit,
-    onSasayakiVnBlankTap: () -> Boolean = { false },
+    onSasayakiVnBlankTap: () -> SasayakiVnBlankTapResult = { SasayakiVnBlankTapResult.Ignored },
+    onSasayakiVnAdvanceScreen: () -> Unit = {},
     onReaderInteraction: () -> Unit,
     onImageTapped: (String) -> Unit,
     onHighlightCreated: (HighlightColor, String, ReaderHighlightCreationResult) -> Unit,
@@ -106,6 +107,7 @@ internal fun ChapterWebView(
     val currentOnClearLookupPopup = rememberUpdatedState(onClearLookupPopup)
     val currentOnReaderTapOutside = rememberUpdatedState(onReaderTapOutside)
     val currentOnSasayakiVnBlankTap = rememberUpdatedState(onSasayakiVnBlankTap)
+    val currentOnSasayakiVnAdvanceScreen = rememberUpdatedState(onSasayakiVnAdvanceScreen)
     val currentOnReaderInteraction = rememberUpdatedState(onReaderInteraction)
     val currentOnImageTapped = rememberUpdatedState(onImageTapped)
     val currentOnHighlightCreated = rememberUpdatedState(onHighlightCreated)
@@ -384,21 +386,34 @@ internal fun ChapterWebView(
 
                             override fun onTap(x: Float, y: Float) {
                                 selectAt(x, y) {
-                                    if (currentOnSasayakiVnBlankTap.value()) {
-                                        currentOnReaderInteraction.value()
-                                        currentOnClearLookupPopup.value()
-                                    } else if (readerSettings.viewMode == ReaderViewMode.VisualNovel && readerSettings.visualNovelClickAdvance) {
-                                        currentOnReaderInteraction.value()
-                                        currentOnClearLookupPopup.value()
-                                        webView.navigatePageForDirection(
-                                            direction = ReaderNavigationDirection.Forward,
-                                            onNextChapter = currentOnNextChapter.value,
-                                            onPreviousChapter = currentOnPreviousChapter.value,
-                                            onDisplayedProgress = currentOnDisplayProgress.value,
-                                            onSaveProgress = currentOnSaveBookmark.value,
-                                        )
-                                    } else {
-                                        currentOnReaderTapOutside.value()
+                                    when (currentOnSasayakiVnBlankTap.value()) {
+                                        SasayakiVnBlankTapResult.AdvanceScreen -> {
+                                            currentOnReaderInteraction.value()
+                                            currentOnClearLookupPopup.value()
+                                            currentOnSasayakiVnAdvanceScreen.value()
+                                        }
+                                        SasayakiVnBlankTapResult.TogglePlayback -> {
+                                            currentOnReaderInteraction.value()
+                                            currentOnClearLookupPopup.value()
+                                        }
+                                        SasayakiVnBlankTapResult.DismissLookup -> {
+                                            currentOnReaderTapOutside.value()
+                                        }
+                                        SasayakiVnBlankTapResult.Ignored -> {
+                                            if (readerSettings.viewMode == ReaderViewMode.VisualNovel && readerSettings.visualNovelClickAdvance) {
+                                                currentOnReaderInteraction.value()
+                                                currentOnClearLookupPopup.value()
+                                                webView.navigatePageForDirection(
+                                                    direction = ReaderNavigationDirection.Forward,
+                                                    onNextChapter = currentOnNextChapter.value,
+                                                    onPreviousChapter = currentOnPreviousChapter.value,
+                                                    onDisplayedProgress = currentOnDisplayProgress.value,
+                                                    onSaveProgress = currentOnSaveBookmark.value,
+                                                )
+                                            } else {
+                                                currentOnReaderTapOutside.value()
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1048,7 +1063,7 @@ private fun nextReaderPageTurnProgressRequestId(): Long {
     return readerPageTurnProgressRequestId
 }
 
-private fun WebView.navigatePageForDirection(
+internal fun WebView.navigatePageForDirection(
     direction: ReaderNavigationDirection,
     onNextChapter: () -> Boolean,
     onPreviousChapter: () -> Boolean,

@@ -757,6 +757,24 @@ private fun SasayakiSettingsTab(
                 checked = settings.reverseVerticalReaderSkipButtons,
                 onCheckedChange = { onSettingsChange(settings.copy(reverseVerticalReaderSkipButtons = it)) },
             )
+            SliderRow(
+                label = stringResource(R.string.sasayaki_bottom_playback_control_size),
+                valueText = String.format(
+                    Locale.US,
+                    stringResource(R.string.sasayaki_bottom_playback_control_size_format),
+                    normalizeSasayakiBottomPlaybackControlScale(settings.bottomPlaybackControlScale),
+                ),
+                value = normalizeSasayakiBottomPlaybackControlScale(settings.bottomPlaybackControlScale),
+                range = SasayakiBottomPlaybackControlMinScale..SasayakiBottomPlaybackControlMaxScale,
+                steps = SasayakiBottomPlaybackControlScaleSliderSteps,
+                onValueChange = {
+                    onSettingsChange(
+                        settings.copy(
+                            bottomPlaybackControlScale = normalizeSasayakiBottomPlaybackControlScale(it),
+                        ),
+                    )
+                },
+            )
         }
         SasayakiSettingsActionRow(
             label = stringResource(R.string.sasayaki_skip_action),
