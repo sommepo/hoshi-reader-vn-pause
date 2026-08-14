@@ -1999,6 +1999,28 @@ window.hoshiReader = {
     var end = this.sasayakiCueEnd(cue);
     return this.screenIntersectsCharRange(screen, start, end);
   },
+  lastSasayakiCueIdOnSameScreenAs: function(cue) {
+    var cueObject = this.sasayakiCueForInput(cue);
+    var fallbackId = cueObject && cueObject.id ? cueObject.id : (typeof cue === 'string' ? cue : null);
+    var index = this.screenIndexForSasayakiCue(cueObject);
+    if (index < 0 || !this.screens || !this.screens.length) return fallbackId;
+    var screen = this.screens[index];
+    var lastId = fallbackId;
+    var lastEnd = cueObject ? this.sasayakiCueEnd(cueObject) : -1;
+    var lastStart = cueObject ? this.sasayakiCueStart(cueObject) : -1;
+    for (var i = 0; i < this.sasayakiCues.length; i++) {
+      var candidate = this.sasayakiCueForInput(this.sasayakiCues[i]);
+      if (!candidate || !candidate.id || !this.sasayakiCueIntersectsScreen(candidate, screen)) continue;
+      var candidateEnd = this.sasayakiCueEnd(candidate);
+      var candidateStart = this.sasayakiCueStart(candidate);
+      if (candidateEnd > lastEnd || (candidateEnd === lastEnd && candidateStart >= lastStart)) {
+        lastEnd = candidateEnd;
+        lastStart = candidateStart;
+        lastId = candidate.id;
+      }
+    }
+    return lastId;
+  },
   screenIndexForSasayakiCue: function(cue) {
     if (!cue || !this.screens || !this.screens.length) return -1;
     var start = this.sasayakiCueStart(cue);

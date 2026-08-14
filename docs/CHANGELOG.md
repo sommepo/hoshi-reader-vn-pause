@@ -6,6 +6,11 @@ Historical release notes before v1.3.0 live in [CHANGELOG_ARCHIVE.md](CHANGELOG_
 
 ## [Unreleased]
 
+### Added
+
+- Add a Sasayaki option to pause at the end of the current Visual Novel screen
+  and wait for a tap before continuing audiobook playback.
+
 ## [v1.3.3] - 2026-08-13
 
 ### Added

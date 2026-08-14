@@ -11,5 +11,12 @@ class SasayakiScreenAwakeTest {
         assertFalse(SasayakiScreenAwake.shouldKeepScreenOn(isPlaying = false, autoScroll = true))
         assertFalse(SasayakiScreenAwake.shouldKeepScreenOn(isPlaying = true, autoScroll = false))
         assertFalse(SasayakiScreenAwake.shouldKeepScreenOn(isPlaying = false, autoScroll = false))
+        assertTrue(
+            SasayakiScreenAwake.shouldKeepScreenOn(
+                isPlaying = false,
+                autoScroll = true,
+                waitingForContinue = true,
+            ),
+        )
     }
 }

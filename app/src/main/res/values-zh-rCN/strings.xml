@@ -686,6 +686,8 @@
     <string name="sasayaki_light_theme">浅色主题</string>
     <string name="sasayaki_dark_theme">深色主题</string>
     <string name="sasayaki_auto_scroll">自动翻页</string>
+    <string name="sasayaki_pause_at_screen_end">VN 屏结束时暂停</string>
+    <string name="sasayaki_pause_at_screen_end_help">视觉小说模式下，当前屏幕的有声书结束后暂停，点击后继续。</string>
     <string name="sasayaki_image_hold">图片停留</string>
     <string name="sasayaki_image_hold_help">有声书自动翻页遇到插图页时暂停。设为 0 秒可跳过图片停留。</string>
     <string name="sasayaki_image_hold_off" comment="Sasayaki image hold slider value for zero seconds; intentionally matches other off labels.">关闭</string>

@@ -52,6 +52,8 @@ class SasayakiPlayerFacadeTest {
         player.pausePlayback(restoreTemporaryPosition = false)
         assertTrue(player.pauseForAutoPageHold())
         player.resumeAfterAutoPageHold()
+        player.armScreenEndStop(cue)
+        player.continueAfterScreenEnd()
         player.nextCue()
         player.previousCue()
         player.skipForward(10)
@@ -72,6 +74,8 @@ class SasayakiPlayerFacadeTest {
                 "pausePlayback:false",
                 "pauseForAutoPageHold",
                 "resumeAfterAutoPageHold",
+                "armScreenEndStop:cue",
+                "continueAfterScreenEnd",
                 "nextCue",
                 "previousCue",
                 "skipForward:10",
@@ -161,8 +165,10 @@ class SasayakiPlayerFacadeTest {
         override val currentTime = 12.5
         override val duration = 90.0
         override val isPlaying = true
+        override val isWaitingForContinue = false
         override val errorMessage = UiText.Literal("restore failed")
         override var autoScroll = false
+        override var pauseAtScreenEnd = true
         override var readerSkipButtonAction = SasayakiReaderSkipButtonAction.Cue
         override val hasAudio = true
         override val hasMatch = true
@@ -201,6 +207,14 @@ class SasayakiPlayerFacadeTest {
 
         override fun resumeAfterAutoPageHold() {
             commands += "resumeAfterAutoPageHold"
+        }
+
+        override fun armScreenEndStop(endCue: SasayakiMatch) {
+            commands += "armScreenEndStop:${endCue.id}"
+        }
+
+        override fun continueAfterScreenEnd() {
+            commands += "continueAfterScreenEnd"
         }
 
         override fun nextCue() {

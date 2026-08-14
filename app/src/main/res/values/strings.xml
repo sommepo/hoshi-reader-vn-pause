@@ -688,6 +688,8 @@
     <string name="sasayaki_light_theme">Light Theme</string>
     <string name="sasayaki_dark_theme">Dark Theme</string>
     <string name="sasayaki_auto_scroll">Auto-Scroll</string>
+    <string name="sasayaki_pause_at_screen_end">Pause at End of VN Screen</string>
+    <string name="sasayaki_pause_at_screen_end_help">In Visual Novel mode, pause when the current screen\'s audiobook finishes and wait for a tap to continue.</string>
     <string name="sasayaki_image_hold">Image Hold</string>
     <string name="sasayaki_image_hold_help">Pause on illustrated pages during Sasayaki auto-scroll. Set to 0s to skip image holds.</string>
     <string name="sasayaki_image_hold_off" comment="Sasayaki image hold slider value for zero seconds; intentionally matches other off labels.">Off</string>

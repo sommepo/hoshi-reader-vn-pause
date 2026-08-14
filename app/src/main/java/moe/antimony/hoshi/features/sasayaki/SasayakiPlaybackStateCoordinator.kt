@@ -18,6 +18,7 @@ data class SasayakiPendingSeek(
 data class SasayakiPlaybackTickUpdate(
     val shouldSavePosition: Boolean,
     val shouldStopPlayback: Boolean,
+    val screenEndStop: Boolean = false,
 )
 
 class SasayakiPlaybackStateCoordinator(initialPosition: Double) {
@@ -28,8 +29,12 @@ class SasayakiPlaybackStateCoordinator(initialPosition: Double) {
     var isPlaying by mutableStateOf(false)
         private set
 
+    var waitingForContinue by mutableStateOf(false)
+        private set
+
     private var lastSavedSecond = -1
     private var stopPlaybackTime: Double? = null
+    private var screenEndStopArmed = false
     private var temporaryPlaybackReturnPosition: Double? = null
     private var pendingSeek: SasayakiPendingSeek? = null
 
@@ -50,10 +55,32 @@ class SasayakiPlaybackStateCoordinator(initialPosition: Double) {
 
     fun clearStopPlaybackTime() {
         stopPlaybackTime = null
+        screenEndStopArmed = false
     }
 
     fun setStopPlaybackTime(value: Double?) {
         stopPlaybackTime = value
+        screenEndStopArmed = false
+    }
+
+    fun armScreenEndStop(stopTime: Double) {
+        waitingForContinue = false
+        screenEndStopArmed = true
+        stopPlaybackTime = stopTime
+    }
+
+    fun markWaitingForContinue() {
+        waitingForContinue = true
+    }
+
+    fun clearWaitingForContinue() {
+        waitingForContinue = false
+    }
+
+    fun consumeWaitingForContinue(): Boolean {
+        val waiting = waitingForContinue
+        waitingForContinue = false
+        return waiting
     }
 
     fun setTemporaryPlaybackReturnPosition(value: Double?) {
@@ -102,12 +129,15 @@ class SasayakiPlaybackStateCoordinator(initialPosition: Double) {
         val shouldStopPlayback = stopPlaybackTime?.let { stopTime ->
             currentTime >= stopTime && isPlaying
         } == true
+        val screenEndStop = shouldStopPlayback && screenEndStopArmed
         if (shouldStopPlayback) {
             stopPlaybackTime = null
+            screenEndStopArmed = false
         }
         return SasayakiPlaybackTickUpdate(
             shouldSavePosition = shouldSavePosition,
             shouldStopPlayback = shouldStopPlayback,
+            screenEndStop = screenEndStop,
         )
     }
 
@@ -137,6 +167,8 @@ class SasayakiPlaybackStateCoordinator(initialPosition: Double) {
         isPlaying = false
         pendingSeek = null
         stopPlaybackTime = null
+        screenEndStopArmed = false
+        waitingForContinue = false
         temporaryPlaybackReturnPosition = null
         lastSavedSecond = -1
     }

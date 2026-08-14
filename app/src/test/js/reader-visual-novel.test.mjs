@@ -2502,3 +2502,20 @@ test('visual novel Sasayaki completes reveal before highlighting the active cue'
     assert.equal(sasayakiWrappers(reader)[0].textContent, '蒸し暑い');
     assert.equal(sasayakiWrappers(reader)[0].classList.contains('hoshi-sasayaki-active'), true);
 });
+
+test('visual novel last Sasayaki cue on a screen is the last intersecting cue', async () => {
+    const first = { id: 'cue-a', start: 0, length: 3 };
+    const second = { id: 'cue-b', start: 3, length: 3 };
+    const { reader } = await initializeReader(
+        bodyWith(p('一二。三四。')),
+        {
+            revealSpeed: 0,
+            mode: 'sentences',
+            sentencesPerScreen: 2,
+            initialSasayakiCues: [first, second],
+        },
+    );
+
+    assert.equal(reader.lastSasayakiCueIdOnSameScreenAs(first), 'cue-b');
+    assert.equal(reader.lastSasayakiCueIdOnSameScreenAs(second), 'cue-b');
+});

@@ -114,9 +114,31 @@ class SasayakiPlaybackStateCoordinatorTest {
         coordinator.setStopPlaybackTime(2.0)
         tick = coordinator.updateTick(currentPositionMs = 2_100, durationMs = 10_000)
         assertTrue(tick.shouldStopPlayback)
+        assertFalse(tick.screenEndStop)
 
         val nextTick = coordinator.updateTick(currentPositionMs = 2_200, durationMs = 10_000)
         assertFalse(nextTick.shouldStopPlayback)
+    }
+
+    @Test
+    fun screenEndStopArmsWaitingStateWithoutClearingOnUserPauseTime() {
+        val coordinator = SasayakiPlaybackStateCoordinator(initialPosition = 0.0)
+        coordinator.markPlaying()
+        coordinator.armScreenEndStop(1.5)
+
+        val beforeStop = coordinator.updateTick(currentPositionMs = 1_400, durationMs = 10_000)
+        assertFalse(beforeStop.shouldStopPlayback)
+        assertFalse(beforeStop.screenEndStop)
+        assertFalse(coordinator.waitingForContinue)
+
+        val atStop = coordinator.updateTick(currentPositionMs = 1_500, durationMs = 10_000)
+        assertTrue(atStop.shouldStopPlayback)
+        assertTrue(atStop.screenEndStop)
+        coordinator.markPaused()
+        coordinator.markWaitingForContinue()
+        assertTrue(coordinator.waitingForContinue)
+        assertTrue(coordinator.consumeWaitingForContinue())
+        assertFalse(coordinator.waitingForContinue)
     }
 
     @Test

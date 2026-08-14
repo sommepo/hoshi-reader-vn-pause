@@ -42,6 +42,7 @@ data class SasayakiSettings(
     val reverseVerticalReaderSkipButtons: Boolean = false,
     val copyAudiobookToPrivateStorage: Boolean = false,
     val autoScroll: Boolean = true,
+    val pauseAtScreenEnd: Boolean = true,
     val autoPause: Boolean = true,
     val imageHoldSeconds: Float = SasayakiImageHoldDefaultSeconds,
     val lightTextColor: Long = 0xFF000000,
@@ -89,6 +90,7 @@ class SasayakiSettingsStore(context: Context) : SasayakiSettingsLegacySource {
             reverseVerticalReaderSkipButtons = preferences.getBoolean(KEY_REVERSE_VERTICAL_READER_SKIP_BUTTONS, false),
             copyAudiobookToPrivateStorage = preferences.getBoolean(KEY_COPY_AUDIOBOOK_TO_PRIVATE_STORAGE, false),
             autoScroll = preferences.getBoolean(KEY_AUTO_SCROLL, true),
+            pauseAtScreenEnd = preferences.getBoolean(KEY_PAUSE_AT_SCREEN_END, true),
             autoPause = preferences.getBoolean(KEY_AUTO_PAUSE, true),
             imageHoldSeconds = normalizeSasayakiImageHoldSeconds(
                 preferences.getFloat(KEY_IMAGE_HOLD_SECONDS, SasayakiImageHoldDefaultSeconds),
@@ -109,6 +111,7 @@ class SasayakiSettingsStore(context: Context) : SasayakiSettingsLegacySource {
             .putBoolean(KEY_REVERSE_VERTICAL_READER_SKIP_BUTTONS, settings.reverseVerticalReaderSkipButtons)
             .putBoolean(KEY_COPY_AUDIOBOOK_TO_PRIVATE_STORAGE, settings.copyAudiobookToPrivateStorage)
             .putBoolean(KEY_AUTO_SCROLL, settings.autoScroll)
+            .putBoolean(KEY_PAUSE_AT_SCREEN_END, settings.pauseAtScreenEnd)
             .putBoolean(KEY_AUTO_PAUSE, settings.autoPause)
             .putFloat(KEY_IMAGE_HOLD_SECONDS, normalizeSasayakiImageHoldSeconds(settings.imageHoldSeconds))
             .putLong(KEY_LIGHT_TEXT_COLOR, settings.lightTextColor)
@@ -127,6 +130,7 @@ class SasayakiSettingsStore(context: Context) : SasayakiSettingsLegacySource {
         const val KEY_REVERSE_VERTICAL_READER_SKIP_BUTTONS = "sasayakiReverseVerticalReaderSkipButtons"
         const val KEY_COPY_AUDIOBOOK_TO_PRIVATE_STORAGE = "sasayakiCopyAudiobookToPrivateStorage"
         const val KEY_AUTO_SCROLL = "sasayakiAutoScroll"
+        const val KEY_PAUSE_AT_SCREEN_END = "sasayakiPauseAtScreenEnd"
         const val KEY_AUTO_PAUSE = "sasayakiAutoPause"
         const val KEY_IMAGE_HOLD_SECONDS = "sasayakiImageHoldSeconds"
         const val KEY_LIGHT_TEXT_COLOR = "sasayakiTextColor"
@@ -179,6 +183,7 @@ class SasayakiSettingsRepository(
             reverseVerticalReaderSkipButtons = this[KEY_REVERSE_VERTICAL_READER_SKIP_BUTTONS] ?: false,
             copyAudiobookToPrivateStorage = this[KEY_COPY_AUDIOBOOK_TO_PRIVATE_STORAGE] ?: false,
             autoScroll = this[KEY_AUTO_SCROLL] ?: true,
+            pauseAtScreenEnd = this[KEY_PAUSE_AT_SCREEN_END] ?: true,
             autoPause = this[KEY_AUTO_PAUSE] ?: true,
             imageHoldSeconds = normalizeSasayakiImageHoldSeconds(
                 this[KEY_IMAGE_HOLD_SECONDS] ?: SasayakiImageHoldDefaultSeconds,
@@ -198,6 +203,7 @@ class SasayakiSettingsRepository(
         this[KEY_REVERSE_VERTICAL_READER_SKIP_BUTTONS] = settings.reverseVerticalReaderSkipButtons
         this[KEY_COPY_AUDIOBOOK_TO_PRIVATE_STORAGE] = settings.copyAudiobookToPrivateStorage
         this[KEY_AUTO_SCROLL] = settings.autoScroll
+        this[KEY_PAUSE_AT_SCREEN_END] = settings.pauseAtScreenEnd
         this[KEY_AUTO_PAUSE] = settings.autoPause
         this[KEY_IMAGE_HOLD_SECONDS] = normalizeSasayakiImageHoldSeconds(settings.imageHoldSeconds)
         this[KEY_LIGHT_TEXT_COLOR] = settings.lightTextColor
@@ -222,6 +228,7 @@ class SasayakiSettingsRepository(
         private val KEY_COPY_AUDIOBOOK_TO_PRIVATE_STORAGE =
             booleanPreferencesKey("sasayakiCopyAudiobookToPrivateStorage")
         private val KEY_AUTO_SCROLL = booleanPreferencesKey("sasayakiAutoScroll")
+        private val KEY_PAUSE_AT_SCREEN_END = booleanPreferencesKey("sasayakiPauseAtScreenEnd")
         private val KEY_AUTO_PAUSE = booleanPreferencesKey("sasayakiAutoPause")
         private val KEY_IMAGE_HOLD_SECONDS = floatPreferencesKey("sasayakiImageHoldSeconds")
         private val KEY_LIGHT_TEXT_COLOR = longPreferencesKey("sasayakiTextColor")

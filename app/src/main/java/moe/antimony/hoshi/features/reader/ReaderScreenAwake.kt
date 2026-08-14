@@ -7,10 +7,12 @@ object ReaderScreenAwake {
         keepScreenOnWhileReading: Boolean,
         sasayakiIsPlaying: Boolean,
         sasayakiAutoScroll: Boolean,
+        sasayakiWaitingForContinue: Boolean = false,
     ): Boolean =
         keepScreenOnWhileReading ||
             SasayakiScreenAwake.shouldKeepScreenOn(
                 isPlaying = sasayakiIsPlaying,
                 autoScroll = sasayakiAutoScroll,
+                waitingForContinue = sasayakiWaitingForContinue,
             )
 }

@@ -781,6 +781,11 @@ private fun SasayakiSettingsTab(
             checked = settings.autoScroll,
             onCheckedChange = { onSettingsChange(settings.copy(autoScroll = it)) },
         )
+        SasayakiSettingsSwitchRow(
+            label = stringResource(R.string.sasayaki_pause_at_screen_end),
+            checked = settings.pauseAtScreenEnd,
+            onCheckedChange = { onSettingsChange(settings.copy(pauseAtScreenEnd = it)) },
+        )
         SliderRow(
             label = stringResource(R.string.sasayaki_image_hold),
             valueText = sasayakiImageHoldText(settings.imageHoldSeconds),

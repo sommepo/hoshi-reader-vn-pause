@@ -10,6 +10,7 @@ name: Android CI
 
 permissions:
   contents: read
+  actions: write
 
 jobs:
   test-and-lint:
@@ -79,3 +80,9 @@ jobs:
       - name: Test, lint, and assemble debug APK
         shell: bash
         run: ./gradlew --no-daemon test lint assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: hoshi-debug-apk
+          path: app/build/outputs/apk/debug/*.apk

@@ -37,6 +37,9 @@ internal object ReaderPaginationScripts {
     fun highlightSasayakiCueInvocation(cue: SasayakiCueRange, reveal: Boolean): String =
         "window.hoshiReader.highlightSasayakiCue(${cue.toJavaScriptObjectLiteral()}, $reveal)"
 
+    fun lastSasayakiCueIdOnSameScreenAsInvocation(cue: SasayakiCueRange): String =
+        "window.hoshiReader.lastSasayakiCueIdOnSameScreenAs(${cue.toJavaScriptObjectLiteral()})"
+
     fun sasayakiMediaStopsBeforeCueInvocation(cue: SasayakiCueRange): String =
         "window.hoshiReader.sasayakiMediaStopsBeforeCue(${cue.toJavaScriptObjectLiteral()})"
 
@@ -61,6 +64,11 @@ internal object ReaderPaginationScripts {
 
     fun doubleResult(result: String?): Double? =
         result?.trim()?.trim('"')?.toDoubleOrNull()
+
+    fun jsonStringResult(result: String?): String? {
+        val trimmed = result?.trim()?.trim('"') ?: return null
+        return trimmed.takeIf { it.isNotEmpty() && it != "null" }
+    }
 
     fun shellScript(
         initialProgress: Double = 0.0,

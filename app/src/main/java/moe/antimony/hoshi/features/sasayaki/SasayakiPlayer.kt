@@ -53,11 +53,17 @@ class SasayakiPlayer private constructor(
     val currentTime: Double get() = controller.currentTime
     val duration: Double get() = controller.duration
     val isPlaying: Boolean get() = controller.isPlaying
+    val isWaitingForContinue: Boolean get() = controller.isWaitingForContinue
     val errorMessage: UiText? get() = controller.errorMessage
     var autoScroll: Boolean
         get() = controller.autoScroll
         set(value) {
             controller.autoScroll = value
+        }
+    var pauseAtScreenEnd: Boolean
+        get() = controller.pauseAtScreenEnd
+        set(value) {
+            controller.pauseAtScreenEnd = value
         }
     var readerSkipButtonAction: SasayakiReaderSkipButtonAction
         get() = controller.readerSkipButtonAction
@@ -99,6 +105,14 @@ class SasayakiPlayer private constructor(
 
     fun resumeAfterAutoPageHold() {
         controller.resumeAfterAutoPageHold()
+    }
+
+    fun armScreenEndStop(endCue: SasayakiMatch) {
+        controller.armScreenEndStop(endCue)
+    }
+
+    fun continueAfterScreenEnd() {
+        controller.continueAfterScreenEnd()
     }
 
     fun nextCue() {

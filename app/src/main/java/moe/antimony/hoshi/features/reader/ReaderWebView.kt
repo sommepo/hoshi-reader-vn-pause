@@ -917,6 +917,16 @@ fun ReaderWebView(
             closeLookupPopupsAndSelection()
         }
     }
+    fun handleSasayakiVnBlankTap(): Boolean {
+        if (!sasayakiSettings.pauseAtScreenEnd) return false
+        if (effectiveSettings.viewMode != ReaderViewMode.VisualNovel) return false
+        val player = sasayakiPlayer ?: return false
+        if (player.isWaitingForContinue) {
+            player.continueAfterScreenEnd()
+            return true
+        }
+        return player.isPlaying && effectiveSettings.visualNovelClickAdvance
+    }
     val chromeState = remember(
         book,
         readerPosition.displayedPosition,
@@ -1324,7 +1334,23 @@ fun ReaderWebView(
             progress.progress?.let {
                 recordSasayakiDisplayedProgress(it, countStatistics = progress.countStatistics)
             }
+            armSasayakiScreenEndStop(cue)
         }
+    }
+    suspend fun armSasayakiScreenEndStop(cue: SasayakiMatch) {
+        if (!sasayakiSettings.pauseAtScreenEnd) return
+        if (effectiveSettings.viewMode != ReaderViewMode.VisualNovel) return
+        val player = sasayakiPlayer ?: return
+        if (!player.isPlaying) return
+        val lastCueId = ReaderPaginationScripts.jsonStringResult(
+            evaluateReaderJavascript(
+                ReaderPaginationScripts.lastSasayakiCueIdOnSameScreenAsInvocation(cue.toCueRange()),
+            ),
+        )
+        val lastCue = lastCueId
+            ?.let { id -> sasayakiMatchData?.matches?.firstOrNull { match -> match.id == id } }
+            ?: cue
+        player.armScreenEndStop(lastCue)
     }
     LaunchedEffect(
         webView,
@@ -1388,6 +1414,7 @@ fun ReaderWebView(
         onDispose { sasayakiPlayer?.release() }
     }
     sasayakiPlayer?.autoScroll = sasayakiSettings.autoScroll
+    sasayakiPlayer?.pauseAtScreenEnd = sasayakiSettings.pauseAtScreenEnd
     sasayakiPlayer?.readerSkipButtonAction = sasayakiSettings.readerSkipButtonAction
     val currentReaderKeyHandler = rememberUpdatedState<(KeyEvent) -> Boolean> { event ->
         val keyEvent = readerHardwareKeyEventForKeyEvent(
@@ -1419,6 +1446,7 @@ fun ReaderWebView(
         keepScreenOnWhileReading = effectiveSettings.keepScreenOnWhileReading,
         sasayakiIsPlaying = sasayakiPlayer?.isPlaying == true,
         sasayakiAutoScroll = sasayakiSettings.autoScroll,
+        sasayakiWaitingForContinue = sasayakiPlayer?.isWaitingForContinue == true,
     )
     DisposableEffect(context, keepScreenOn) {
         val window = context.findActivity()?.window
@@ -1735,6 +1763,7 @@ fun ReaderWebView(
                         onTextSelected = handleTextSelected,
                         onClearLookupPopup = ::closeLookupPopupsAndSelection,
                         onReaderTapOutside = ::handleReaderTapOutside,
+                        onSasayakiVnBlankTap = ::handleSasayakiVnBlankTap,
                         onReaderInteraction = ::handleReaderInteraction,
                         onImageTapped = ::openFullscreenImage,
                         onHighlightCreated = ::addHighlight,

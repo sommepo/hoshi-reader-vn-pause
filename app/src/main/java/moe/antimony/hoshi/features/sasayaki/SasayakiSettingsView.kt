@@ -191,16 +191,28 @@ fun SasayakiSettingsView(
                             },
                         )
                         SettingsDivider()
-                        ListItem(
-                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                            headlineContent = { Text(stringResource(R.string.sasayaki_auto_scroll)) },
-                            trailingContent = {
-                                Switch(
-                                    checked = loadedSettings.autoScroll,
-                                    onCheckedChange = { save(loadedSettings.copy(autoScroll = it)) },
+                                ListItem(
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                    headlineContent = { Text(stringResource(R.string.sasayaki_auto_scroll)) },
+                                    trailingContent = {
+                                        Switch(
+                                            checked = loadedSettings.autoScroll,
+                                            onCheckedChange = { save(loadedSettings.copy(autoScroll = it)) },
+                                        )
+                                    },
                                 )
-                            },
-                        )
+                                SettingsDivider()
+                                ListItem(
+                                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                                    headlineContent = { Text(stringResource(R.string.sasayaki_pause_at_screen_end)) },
+                                    supportingContent = { Text(stringResource(R.string.sasayaki_pause_at_screen_end_help)) },
+                                    trailingContent = {
+                                        Switch(
+                                            checked = loadedSettings.pauseAtScreenEnd,
+                                            onCheckedChange = { save(loadedSettings.copy(pauseAtScreenEnd = it)) },
+                                        )
+                                    },
+                                )
                         SettingsDivider()
                         SasayakiImageHoldSettingsRow(
                             settings = loadedSettings,
