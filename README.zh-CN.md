@@ -4,13 +4,13 @@
 
 ![Platform](https://img.shields.io/badge/platform-Android-lightgrey)
 ![License](https://img.shields.io/badge/license-GPLv3-blue)
-![Fork](https://img.shields.io/badge/fork-private%20personal-orange)
+![Fork](https://img.shields.io/badge/fork-unofficial-orange)
 
 [English](README.md) | **简体中文**
 
 </div>
 
-> **这是私人自用 fork，不是官方 Hoshi Reader。**
+> **这是非官方的公开 fork，不是官方 Hoshi Reader。**
 >
 > 上游仓库：[HuangAntimony/Hoshi-Reader-Android](https://github.com/HuangAntimony/Hoshi-Reader-Android)
 >
@@ -18,7 +18,7 @@
 
 ## 这个 fork 是什么
 
-Hoshi Reader Android 的私人副本，供个人使用。保留上游的日语 EPUB 阅读器（Yomitan 查词、Anki 制卡、Sasayaki 有声书跟读、VN 模式、墨水屏），并增加一项阅读功能：**Push to Continue**（点击继续）。
+Hoshi Reader Android 的非官方副本。保留上游的日语 EPUB 阅读器（Yomitan 查词、Anki 制卡、Sasayaki 有声书跟读、VN 模式、墨水屏），并增加一项阅读功能：**Push to Continue**（点击继续）。
 
 Debug APK 会作为 **Hoshi Debug**（`moe.antimony.hoshi.debug`）安装在官方 Hoshi **旁边**，不会覆盖官方 App，也不共用书库。
 
@@ -128,7 +128,9 @@ Debug APK 会作为 **Hoshi Debug**（`moe.antimony.hoshi.debug`）安装在官�
 
 ## 下载
 
-本仓库为私有。请从本仓库的 GitHub Actions 构建 debug APK（产物名 `hoshi-debug-apk`）。若不想要 Push to Continue，请使用[上游 Releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest) 中的官方 App。
+从本仓库最近一次成功的 [GitHub Actions](https://github.com/sommepo/hoshi-reader-vn-pause/actions) 运行下载 debug APK（产物名 `hoshi-debug-apk`）。它会作为 **Hoshi Debug** 安装在官方 Hoshi 旁边。
+
+若不想要 Push to Continue，请使用[上游 Releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest) 中的官方 App。
 
 需要 Android 8.0 或更高版本。
 

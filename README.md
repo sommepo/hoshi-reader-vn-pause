@@ -4,13 +4,13 @@
 
 ![Platform](https://img.shields.io/badge/platform-Android-lightgrey)
 ![License](https://img.shields.io/badge/license-GPLv3-blue)
-![Fork](https://img.shields.io/badge/fork-private%20personal-orange)
+![Fork](https://img.shields.io/badge/fork-unofficial-orange)
 
 **English** | [简体中文](README.zh-CN.md)
 
 </div>
 
-> **This is a private personal fork. It is not official Hoshi Reader.**
+> **This is an unofficial public fork. It is not official Hoshi Reader.**
 >
 > Upstream: [HuangAntimony/Hoshi-Reader-Android](https://github.com/HuangAntimony/Hoshi-Reader-Android)
 >
@@ -18,7 +18,7 @@
 
 ## What this fork is
 
-A private copy of Hoshi Reader Android for personal use. It keeps the upstream Japanese EPUB reader (Yomitan lookup, Anki mining, Sasayaki audiobook read-along, VN mode, e-ink) and adds one extra reading mode: **Push to Continue**.
+An unofficial copy of Hoshi Reader Android. It keeps the upstream Japanese EPUB reader (Yomitan lookup, Anki mining, Sasayaki audiobook read-along, VN mode, e-ink) and adds one extra reading mode: **Push to Continue**.
 
 The debug APK installs **next to** official Hoshi as **Hoshi Debug** (`moe.antimony.hoshi.debug`). It does not replace the official app or share its library.
 
@@ -27,10 +27,8 @@ The debug APK installs **next to** official Hoshi as **Hoshi Debug** (`moe.antim
 In **Visual Novel** mode with a Sasayaki audiobook (audio + SRT match):
 
 1. Audio plays through every sentence on the **current VN screen**.
-2. When that screen’s last audiobook cue ends, playback **pauses**.
-3. The screen stays up. Tap a **blank area**, or press play, to start the next screen.
-
-That is the whole point of this fork: hear a screen, wait, push to continue.
+2. When that screen’s last audiobook cue ends playback **pauses**.
+3. The screen stays up. Tap a **blank area** or press play to start the next screen.
 
 It is **on by default**. Turn it off in Sasayaki settings if you want normal uninterrupted read-along. Dictionary taps still look up words. It only applies in VN mode; paginated and continuous reading are unchanged.
 
@@ -128,7 +126,9 @@ It is **on by default**. Turn it off in Sasayaki settings if you want normal uni
 
 ## Download
 
-This fork is private. Build a debug APK from GitHub Actions on this repository (artifact `hoshi-debug-apk`), or use the official app from [upstream releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest) if you do not want Push to Continue.
+Download a debug APK from the latest successful [GitHub Actions](https://github.com/sommepo/hoshi-reader-vn-pause/actions) run on this repository (artifact `hoshi-debug-apk`). It sideloads as **Hoshi Debug** next to official Hoshi.
+
+If you do not want Push to Continue, use the official app from [upstream releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest).
 
 Requires Android 8.0 or later.
 
