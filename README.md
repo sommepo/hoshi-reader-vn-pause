@@ -1,17 +1,40 @@
 <div align="center">
 
-# Hoshi Reader Android
+# Hoshi Reader Android — Push to Continue
 
 ![Platform](https://img.shields.io/badge/platform-Android-lightgrey)
 ![License](https://img.shields.io/badge/license-GPLv3-blue)
-[![Download](https://img.shields.io/github/downloads/HuangAntimony/Hoshi-Reader-Android/total?label=download)](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases)
-[![Latest download](https://img.shields.io/github/downloads/HuangAntimony/Hoshi-Reader-Android/latest/total?label=latest%20download)](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest)
+![Fork](https://img.shields.io/badge/fork-private%20personal-orange)
 
 **English** | [简体中文](README.zh-CN.md)
 
-Hoshi Reader Android is a lightweight Japanese EPUB reader app for Android, built for immersion learning with Yomitan lookup, Anki card creation, audiobook read-along, and e-ink mode options.
+</div>
 
-This project is a native Android recreation of [Hoshi Reader](https://github.com/Manhhao/Hoshi-Reader).
+> **This is a private personal fork. It is not official Hoshi Reader.**
+>
+> Upstream: [HuangAntimony/Hoshi-Reader-Android](https://github.com/HuangAntimony/Hoshi-Reader-Android)
+>
+> Do not send bug reports or feature requests for **Push to Continue** to the upstream project. The original author did not make this fork and is not responsible for it.
+
+## What this fork is
+
+A private copy of Hoshi Reader Android for personal use. It keeps the upstream Japanese EPUB reader (Yomitan lookup, Anki mining, Sasayaki audiobook read-along, VN mode, e-ink) and adds one extra reading mode: **Push to Continue**.
+
+The debug APK installs **next to** official Hoshi as **Hoshi Debug** (`moe.antimony.hoshi.debug`). It does not replace the official app or share its library.
+
+## What Push to Continue does
+
+In **Visual Novel** mode with a Sasayaki audiobook (audio + SRT match):
+
+1. Audio plays through every sentence on the **current VN screen**.
+2. When that screen’s last audiobook cue ends, playback **pauses**.
+3. The screen stays up. Tap a **blank area**, or press play, to start the next screen.
+
+That is the whole point of this fork: hear a screen, wait, push to continue.
+
+It is **on by default**. Turn it off in Sasayaki settings if you want normal uninterrupted read-along. Dictionary taps still look up words. It only applies in VN mode; paginated and continuous reading are unchanged.
+
+<div align="center">
 
 <table>
   <tr>
@@ -74,6 +97,7 @@ This project is a native Android recreation of [Hoshi Reader](https://github.com
 - Match audiobook subtitle files to book text to highlight the current sentence.
 - Follow highlights with automatic page turning.
 - Control playback speed, skip actions, and Android media controls.
+- **Push to Continue (this fork):** in VN mode, pause when the current screen’s audio ends and wait for a tap before continuing.
 
 ### Data Sync And Migration
 
@@ -102,23 +126,19 @@ This project is a native Android recreation of [Hoshi Reader](https://github.com
 - **EPUB audiobook read-along:** Hoshi aligns audiobook subtitles with the book text for sentence highlighting, auto page turning, playback control, and sentence-audio mining; jidoujisho does not provide an equivalent book-aligned audiobook workflow for EPUB reading.
 - **Multi-device sync and migration:** Google Drive sync is compatible with ッツ Reader, and Hoshi supports cross-device import, export, and backup restore; jidoujisho does not provide an equivalent sync or backup migration path.
 
-## Download Hoshi Reader Android APK
+## Download
 
-Download the latest Hoshi Reader Android APK from [GitHub Releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest).
+This fork is private. Build a debug APK from GitHub Actions on this repository (artifact `hoshi-debug-apk`), or use the official app from [upstream releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest) if you do not want Push to Continue.
 
-Hoshi Reader Android requires Android 8.0 or later.
+Requires Android 8.0 or later.
 
 ## Development Status
 
-Feature parity with the iOS app is complete. Current development focuses on polishing UI and user interactions.
-
-See [docs/CHANGELOG.md](docs/CHANGELOG.md) for shipped user-visible changes.
+This fork tracks upstream Hoshi Reader Android and adds Push to Continue. See [docs/CHANGELOG.md](docs/CHANGELOG.md).
 
 ## Feature Requests
 
-Please submit general feature requests to the iOS repository first.
-
-If the request is Android-specific, or cannot be implemented on iOS because of system limitations, such as e-ink themes or volume-key page turning, please open an issue in this repository.
+Do not open Push to Continue issues on upstream Hoshi. For the official app, follow [upstream](https://github.com/HuangAntimony/Hoshi-Reader-Android) and [Hoshi Reader iOS](https://github.com/Manhhao/Hoshi-Reader).
 
 ## Privacy And Data
 
@@ -141,14 +161,4 @@ Hoshi Reader Android builds on this ecosystem:
 
 Distributed under the GNU General Public License v3.0. See [LICENSE](LICENSE) for details.
 
-## Star History
-
-If Hoshi Reader Android helps your reading workflow, please consider giving the project a star.
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=HuangAntimony/Hoshi-Reader-Android&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=HuangAntimony/Hoshi-Reader-Android&type=date&legend=top-left" />
-    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=HuangAntimony/Hoshi-Reader-Android&type=date&legend=top-left" />
-  </picture>
-</p>
+If official Hoshi Reader helps your reading workflow, star [HuangAntimony/Hoshi-Reader-Android](https://github.com/HuangAntimony/Hoshi-Reader-Android).

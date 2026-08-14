@@ -1,17 +1,40 @@
 <div align="center">
 
-# Hoshi Reader Android
+# Hoshi Reader Android — Push to Continue
 
 ![Platform](https://img.shields.io/badge/platform-Android-lightgrey)
 ![License](https://img.shields.io/badge/license-GPLv3-blue)
-[![Download](https://img.shields.io/github/downloads/HuangAntimony/Hoshi-Reader-Android/total?label=download)](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases)
-[![Latest download](https://img.shields.io/github/downloads/HuangAntimony/Hoshi-Reader-Android/latest/total?label=latest%20download)](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest)
+![Fork](https://img.shields.io/badge/fork-private%20personal-orange)
 
 [English](README.md) | **简体中文**
 
-Hoshi Reader Android 是一款面向 Android 日语沉浸学习的轻量 EPUB 阅读器 App，支持 Yomitan 辞典查词、Anki 制卡、有声书跟读，以及墨水屏专用的模式选项。
+</div>
 
-本项目是 [Hoshi Reader](https://github.com/Manhhao/Hoshi-Reader) 的 Android 原生复刻版。
+> **这是私人自用 fork，不是官方 Hoshi Reader。**
+>
+> 上游仓库：[HuangAntimony/Hoshi-Reader-Android](https://github.com/HuangAntimony/Hoshi-Reader-Android)
+>
+> 请不要把 **Push to Continue** 的问题或功能请求发给上游。原作者没有制作这个 fork，也不对此负责。
+
+## 这个 fork 是什么
+
+Hoshi Reader Android 的私人副本，供个人使用。保留上游的日语 EPUB 阅读器（Yomitan 查词、Anki 制卡、Sasayaki 有声书跟读、VN 模式、墨水屏），并增加一项阅读功能：**Push to Continue**（点击继续）。
+
+Debug APK 会作为 **Hoshi Debug**（`moe.antimony.hoshi.debug`）安装在官方 Hoshi **旁边**，不会覆盖官方 App，也不共用书库。
+
+## Push to Continue 做什么
+
+在 **视觉小说（VN）** 模式下，配合 Sasayaki 有声书（音频 + SRT 匹配）：
+
+1. 音频会播完 **当前 VN 屏幕** 上的所有句子。
+2. 该屏最后一句有声书结束后，播放 **暂停**。
+3. 屏幕保持显示。点击 **空白处** 或按播放，进入下一屏。
+
+这个 fork 的目的就是：听完一屏、停下、再按一下继续。
+
+默认开启。若要连续跟读，可在 Sasayaki 设置里关闭。点文字仍会查词。只在 VN 模式生效；分页和滚动阅读不变。
+
+<div align="center">
 
 <table>
   <tr>
@@ -74,6 +97,7 @@ Hoshi Reader Android 是一款面向 Android 日语沉浸学习的轻量 EPUB �
 - 将有声书字幕文件匹配到书籍以高亮当前句子。
 - 跟随高亮自动翻页。
 - 控制播放速度、跳转动作和 Android 系统媒体控制。
+- **Push to Continue（本 fork）：** VN 模式下，当前屏幕音频结束后暂停，点击后再继续。
 
 ### 数据同步与迁移
 
@@ -102,11 +126,11 @@ Hoshi Reader Android 是一款面向 Android 日语沉浸学习的轻量 EPUB �
 - **EPUB 有声书跟读：** Hoshi 会把有声书字幕对齐到书籍文本，用于句子高亮、自动翻页、播放控制和句子音频制卡；jidoujisho 没有面向 EPUB 阅读的等价书籍对齐有声书工作流。
 - **多设备同步与迁移：** Google Drive 同步兼容 ッツ Reader，并支持跨设备导入、导出和备份恢复；jidoujisho 没有对应的同步或备份迁移路径。
 
-## 下载 Hoshi Reader Android APK
+## 下载
 
-请从 [GitHub Releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest) 下载最新的 Hoshi Reader Android APK。
+本仓库为私有。请从本仓库的 GitHub Actions 构建 debug APK（产物名 `hoshi-debug-apk`）。若不想要 Push to Continue，请使用[上游 Releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest) 中的官方 App。
 
-Hoshi Reader Android 需要 Android 8.0 或更高版本。
+需要 Android 8.0 或更高版本。
 
 ## 使用指南
 
@@ -116,15 +140,11 @@ App 交互指南可以参考这篇 Hoshi Reader iOS 使用文档：[Hoshi Reader
 
 ## 开发状态
 
-已完成与 iOS 版的功能对齐，当前的开发重点是打磨 UI 与用户交互。
-
-已发布的用户可见变化见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。
+本 fork 跟随上游 Hoshi Reader Android，并增加 Push to Continue。见 [docs/CHANGELOG.md](docs/CHANGELOG.md)。
 
 ## 功能请求
 
-通用功能请求请优先提交到 iOS 仓库。
-
-若为 Android 特有功能，或因 iOS 系统限制无法实现的功能（例如墨水屏主题、音量键翻页等），请在本仓库提交 Issue。
+请不要把 Push to Continue 相关问题发到上游 Hoshi。官方 App 请走 [上游仓库](https://github.com/HuangAntimony/Hoshi-Reader-Android) 和 [Hoshi Reader iOS](https://github.com/Manhhao/Hoshi-Reader)。
 
 ## 隐私与数据
 
@@ -147,14 +167,4 @@ Hoshi Reader Android 基于以下生态：
 
 本项目基于 GNU General Public License v3.0 发布。详情见 [LICENSE](LICENSE)。
 
-## Star History
-
-如果 Hoshi Reader Android 对你的阅读有帮助，欢迎顺手点一个 Star。
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=HuangAntimony/Hoshi-Reader-Android&type=date&theme=dark&legend=top-left" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=HuangAntimony/Hoshi-Reader-Android&type=date&legend=top-left" />
-    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=HuangAntimony/Hoshi-Reader-Android&type=date&legend=top-left" />
-  </picture>
-</p>
+如果官方 Hoshi Reader 对你有帮助，请给 [HuangAntimony/Hoshi-Reader-Android](https://github.com/HuangAntimony/Hoshi-Reader-Android) 点 Star。

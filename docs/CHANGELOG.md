@@ -8,8 +8,8 @@ Historical release notes before v1.3.0 live in [CHANGELOG_ARCHIVE.md](CHANGELOG_
 
 ### Added
 
-- Add a Sasayaki option to pause at the end of the current Visual Novel screen
-  and wait for a tap before continuing audiobook playback.
+- Add Push to Continue: in Visual Novel mode, pause when the current screen's
+  audiobook finishes and wait for a tap before continuing.
 
 ## [v1.3.3] - 2026-08-13
 
