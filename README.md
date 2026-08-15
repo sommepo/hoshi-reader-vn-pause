@@ -4,21 +4,21 @@
 
 ![Platform](https://img.shields.io/badge/platform-Android-lightgrey)
 ![License](https://img.shields.io/badge/license-GPLv3-blue)
-![Fork](https://img.shields.io/badge/fork-private-orange)
+![Fork](https://img.shields.io/badge/fork-unofficial-orange)
 
 **English** | [简体中文](README.zh-CN.md)
 
 </div>
 
-> **This is a private unofficial copy. It is not official Hoshi Reader.**
+> **This is an unofficial public fork. It is not official Hoshi Reader.**
 >
 > Upstream: [HuangAntimony/Hoshi-Reader-Android](https://github.com/HuangAntimony/Hoshi-Reader-Android)
 >
-> Do not send bug reports or feature requests for **Push to Continue** to the upstream project. The original author did not make this copy and is not responsible for it.
+> Do not send bug reports or feature requests for **Push to Continue** to the upstream project. The original author did not make this fork and is not responsible for it.
 
-## What this copy is
+## What this fork is
 
-A private copy of Hoshi Reader Android. It keeps the upstream Japanese EPUB reader (Yomitan lookup, Anki mining, Sasayaki audiobook read-along, VN mode, e-ink) and adds one extra reading mode: **Push to Continue**.
+An unofficial fork of Hoshi Reader Android. It keeps the upstream Japanese EPUB reader (Yomitan lookup, Anki mining, Sasayaki audiobook read-along, VN mode, e-ink) and adds one extra reading mode: **Push to Continue**.
 
 The debug APK installs **next to** official Hoshi as **Hoshi Debug** (`moe.antimony.hoshi.debug`). It does not replace the official app or share its library.
 
@@ -127,8 +127,6 @@ It is **on by default**. Turn it off in Sasayaki settings if you want normal uni
 ## Download
 
 Install the debug APK from [Releases](https://github.com/sommepo/hoshi-reader-vn-pause/releases/latest). It sideloads as **Hoshi Debug** next to official Hoshi.
-
-This repository is private. The release APK is only visible to people with access, or you can send the APK file directly.
 
 If you do not want Push to Continue, use the official app from [upstream releases](https://github.com/HuangAntimony/Hoshi-Reader-Android/releases/latest).
 
