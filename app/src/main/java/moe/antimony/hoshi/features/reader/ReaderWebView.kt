@@ -930,32 +930,6 @@ fun ReaderWebView(
         }
         return result
     }
-    fun playSasayakiForCurrentVnScreen() {
-        val player = sasayakiPlayer ?: return
-        scope.launch {
-            val firstCueId = ReaderPaginationScripts.jsonStringResult(
-                evaluateReaderJavascript(
-                    ReaderPaginationScripts.firstSasayakiCueIdOnCurrentScreenInvocation(),
-                ),
-            ) ?: return@launch
-            val cue = sasayakiMatchData?.matches?.firstOrNull { match -> match.id == firstCueId }
-                ?: return@launch
-            player.playCue(cue, stop = false)
-        }
-    }
-    fun advanceVisibleVnScreenAndPlay() {
-        val targetWebView = webView ?: return
-        targetWebView.navigatePageForDirection(
-            direction = ReaderNavigationDirection.Forward,
-            onNextChapter = { goToNextChapter() },
-            onPreviousChapter = { goToPreviousChapter() },
-            onDisplayedProgress = { progress ->
-                displayPagedTurnProgress(progress)
-                playSasayakiForCurrentVnScreen()
-            },
-            onSaveProgress = { saveDisplayedProgress(it) },
-        )
-    }
     val chromeState = remember(
         book,
         readerPosition.displayedPosition,
@@ -1018,6 +992,32 @@ fun ReaderWebView(
                 }
             }
         }
+    }
+    fun playSasayakiForCurrentVnScreen() {
+        val player = sasayakiPlayer ?: return
+        scope.launch {
+            val firstCueId = ReaderPaginationScripts.jsonStringResult(
+                evaluateReaderJavascript(
+                    ReaderPaginationScripts.firstSasayakiCueIdOnCurrentScreenInvocation(),
+                ),
+            ) ?: return@launch
+            val cue = sasayakiMatchData?.matches?.firstOrNull { match -> match.id == firstCueId }
+                ?: return@launch
+            player.playCue(cue, stop = false)
+        }
+    }
+    fun advanceVisibleVnScreenAndPlay() {
+        val targetWebView = webView ?: return
+        targetWebView.navigatePageForDirection(
+            direction = ReaderNavigationDirection.Forward,
+            onNextChapter = { goToNextChapter() },
+            onPreviousChapter = { goToPreviousChapter() },
+            onDisplayedProgress = { progress ->
+                displayPagedTurnProgress(progress)
+                playSasayakiForCurrentVnScreen()
+            },
+            onSaveProgress = { saveDisplayedProgress(it) },
+        )
     }
     suspend fun awaitReaderChapterReady(chapterIndex: Int): Boolean =
         awaitReaderSasayakiChapterReady(
