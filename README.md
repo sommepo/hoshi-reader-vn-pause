@@ -29,6 +29,7 @@ In **Visual Novel** mode with a Sasayaki audiobook (audio + SRT match):
 1. Audio plays through every sentence on the **current VN screen**.
 2. When that screen’s last audiobook cue ends playback **pauses**.
 3. The screen stays up. Tap a **blank area** or press play to start the next screen.
+4. If you have dictionary tapped to look up a word, you can safely tap a blank area to exit the lookup without pausing or playing audio.
 
 It is **on by default**. Turn it off in Sasayaki settings if you want normal uninterrupted read-along. Dictionary taps still look up words. It only applies in VN mode; paginated and continuous reading are unchanged.
 
