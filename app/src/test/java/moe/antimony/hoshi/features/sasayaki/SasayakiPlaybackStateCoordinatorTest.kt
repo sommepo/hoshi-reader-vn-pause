@@ -121,6 +121,21 @@ class SasayakiPlaybackStateCoordinatorTest {
     }
 
     @Test
+    fun screenEndStopCanArmWhilePausedAndStopAfterPlaybackStarts() {
+        val coordinator = SasayakiPlaybackStateCoordinator(initialPosition = 0.0)
+        coordinator.armScreenEndStop(1.5)
+
+        val pausedTick = coordinator.updateTick(currentPositionMs = 1_600, durationMs = 10_000)
+        assertFalse(pausedTick.shouldStopPlayback)
+        assertFalse(pausedTick.screenEndStop)
+
+        coordinator.markPlaying()
+        val playingTick = coordinator.updateTick(currentPositionMs = 1_600, durationMs = 10_000)
+        assertTrue(playingTick.shouldStopPlayback)
+        assertTrue(playingTick.screenEndStop)
+    }
+
+    @Test
     fun screenEndStopArmsWaitingStateWithoutClearingOnUserPauseTime() {
         val coordinator = SasayakiPlaybackStateCoordinator(initialPosition = 0.0)
         coordinator.markPlaying()

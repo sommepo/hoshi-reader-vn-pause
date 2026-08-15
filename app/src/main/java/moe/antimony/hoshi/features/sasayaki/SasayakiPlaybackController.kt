@@ -47,6 +47,7 @@ internal interface SasayakiPlaybackControllerContract {
     fun updateMatchData(matchData: SasayakiMatchData?)
     fun findCue(chapterIndex: Int, offset: Int): SasayakiMatch?
     fun playCue(cue: SasayakiMatch, stop: Boolean)
+    fun prepareAudio()
     fun exportCueAudio(cue: SasayakiMatch, sentence: String): File?
     fun release()
 }
@@ -180,6 +181,7 @@ internal class SasayakiPlaybackController(
         teardownPlayer(clearCue = false)
         playbackPersistence.importAudio(audioUri, copiedAudioFileName)
         audioAvailability.markAudioAvailable()
+        prepareAudio()
     }
 
     override fun clearAudio() {
@@ -230,7 +232,7 @@ internal class SasayakiPlaybackController(
     }
 
     override fun armScreenEndStop(endCue: SasayakiMatch) {
-        if (!pauseAtScreenEnd || !isPlaying) return
+        if (!pauseAtScreenEnd) return
         playbackState.armScreenEndStop(endCue.endTime + delay)
     }
 
@@ -344,6 +346,12 @@ internal class SasayakiPlaybackController(
             )
             true
         }
+    }
+
+    override fun prepareAudio() {
+        if (playbackLifecycle.hasEngine) return
+        if (audioSourceRepository.playbackSource(playback) == null) return
+        withPreparedPlayback { true }
     }
 
     override fun exportCueAudio(cue: SasayakiMatch, sentence: String): File? {
@@ -468,7 +476,10 @@ internal class SasayakiPlaybackController(
     private fun handleAudioRestoreFailure(error: Throwable) {
         clearAutoPageHoldResume()
         onForegroundPlaybackRequestedChanged(false)
-        audioAvailability.markRestoreFailed(error)
+        audioAvailability.markRestoreFailed(
+            error = error,
+            keepHasAudio = audioSourceRepository.playbackSource(playback) != null,
+        )
     }
 
     private fun handlePlaybackCompleted() {
@@ -583,7 +594,7 @@ internal class SasayakiPlaybackController(
 }
 
 internal class SasayakiDeferredPlaybackCommand {
-    private var pending = false
+    private var pendingCommand: (() -> Boolean)? = null
 
     fun run(
         hasPreparedEngine: Boolean,
@@ -591,20 +602,21 @@ internal class SasayakiDeferredPlaybackCommand {
         runPreparedCommand: () -> Boolean,
     ): Boolean {
         if (hasPreparedEngine) {
-            pending = false
+            pendingCommand = null
             return runPreparedCommand()
         }
-        if (pending) return false
-        pending = true
+        val alreadyWaiting = pendingCommand != null
+        pendingCommand = runPreparedCommand
+        if (alreadyWaiting) return false
         requestPlaybackEnvironment {
-            if (!pending) return@requestPlaybackEnvironment
-            pending = false
-            runPreparedCommand()
+            val command = pendingCommand ?: return@requestPlaybackEnvironment
+            pendingCommand = null
+            command()
         }
         return false
     }
 
     fun cancel() {
-        pending = false
+        pendingCommand = null
     }
 }

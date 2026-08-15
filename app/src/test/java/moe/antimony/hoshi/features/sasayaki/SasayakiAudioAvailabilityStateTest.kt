@@ -29,6 +29,16 @@ class SasayakiAudioAvailabilityStateTest {
     }
 
     @Test
+    fun restoreFailureKeepsControlsAvailableWhenAudioFileStillExists() {
+        val state = SasayakiAudioAvailabilityState(initialHasAudio = true)
+
+        state.markRestoreFailed(IllegalStateException("player not ready"), keepHasAudio = true)
+
+        assertTrue(state.hasAudio)
+        assertEquals(UiText.Literal("player not ready"), state.errorMessage)
+    }
+
+    @Test
     fun restoreFailureMarksAudioUnavailableAndKeepsReadableMessage() {
         val state = SasayakiAudioAvailabilityState()
         state.markRestoreSucceeded()

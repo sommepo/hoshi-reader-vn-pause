@@ -20,6 +20,70 @@ class SasayakiPlaybackControllerDeferredCommandTest {
     val temporaryFolder = TemporaryFolder()
 
     @Test
+    fun prepareAudioRestoresEngineWithoutStartingPlayback() {
+        val harness = controllerHarness()
+
+        harness.controller.prepareAudio()
+
+        assertTrue(harness.preparer.prepared)
+        assertFalse(harness.controller.isPlaying)
+        assertTrue(harness.controller.hasAudio)
+        assertEquals(emptyList<String>(), harness.engine.events)
+    }
+
+    @Test
+    fun restoreFailureKeepsHasAudioWhenStoredAudioFileStillExists() {
+        val harness = controllerHarness(prepareThrows = true)
+
+        harness.controller.togglePlayback()
+
+        assertTrue(harness.controller.hasAudio)
+        assertFalse(harness.controller.isPlaying)
+    }
+
+    @Test
+    fun laterPlayCueReplacesPendingStartWhileEngineIsStillPreparing() {
+        var ready: (() -> Unit)? = null
+        val bookRoot = temporaryFolder.newFolder("book-deferred")
+        val audioFile = bookRoot.resolve("Sasayaki/sasayaki_audio.m4b").also { file ->
+            file.parentFile?.mkdirs()
+            file.writeText("audio")
+        }
+        val engine = FakePlaybackEngine()
+        val preparer = FakePlaybackPreparer(engine)
+        val cue = SasayakiMatch("from-lookup", 4.0, 6.0, "from-lookup", 0, 0, 5)
+        val controller = SasayakiPlaybackController(
+            context = FakeContext(temporaryFolder.newFolder("cache-deferred")),
+            bookRoot = bookRoot,
+            playbackRepository = NoOpPlaybackRepository,
+            bookTitle = "Book",
+            bookCoverFile = null,
+            matchData = SasayakiMatchData(matches = listOf(cue), unmatched = 0),
+            initialPlayback = SasayakiPlaybackData(
+                lastPosition = 0.0,
+                audioFileName = audioFile.name,
+            ),
+            persistenceScope = CoroutineScope(Dispatchers.Unconfined),
+            persistenceDispatcher = Dispatchers.Unconfined,
+            getCurrentChapterIndex = { 0 },
+            onCue = { _, _, _ -> },
+            onClearCue = {},
+            playbackPreparer = preparer,
+            onPlaybackStartRequested = { onReady -> ready = onReady },
+            restoreAudioOnCreate = false,
+            tickScheduler = NoOpTickScheduler,
+        )
+
+        controller.togglePlayback()
+        controller.playCue(cue, stop = false)
+        ready?.invoke()
+
+        assertTrue(preparer.prepared)
+        assertEquals(listOf("seek:4000", "start:1.0"), engine.events)
+        assertTrue(controller.isPlaying)
+    }
+
+    @Test
     fun skipForwardPreparesAudioBeforeSeekingWhenEngineIsNotLoadedYet() {
         val harness = controllerHarness()
 
@@ -185,6 +249,7 @@ class SasayakiPlaybackControllerDeferredCommandTest {
     private fun controllerHarness(
         matchData: SasayakiMatchData? = null,
         initialPosition: Double = 3.5,
+        prepareThrows: Boolean = false,
         onCue: (SasayakiMatch, Boolean, SasayakiCueRevealSource) -> Unit = { _, _, _ -> },
     ): ControllerHarness {
         val bookRoot = temporaryFolder.newFolder("book")
@@ -193,7 +258,7 @@ class SasayakiPlaybackControllerDeferredCommandTest {
             file.writeText("audio")
         }
         val engine = FakePlaybackEngine()
-        val preparer = FakePlaybackPreparer(engine)
+        val preparer = FakePlaybackPreparer(engine, prepareThrows = prepareThrows)
         val controller = SasayakiPlaybackController(
             context = FakeContext(temporaryFolder.newFolder("cache")),
             bookRoot = bookRoot,
@@ -246,6 +311,7 @@ class SasayakiPlaybackControllerDeferredCommandTest {
 
     private class FakePlaybackPreparer(
         private val engine: FakePlaybackEngine,
+        private val prepareThrows: Boolean = false,
     ) : SasayakiPlaybackPreparer {
         var prepared = false
             private set
@@ -257,6 +323,9 @@ class SasayakiPlaybackControllerDeferredCommandTest {
             artworkFile: File?,
             callbacks: SasayakiAudioRestoreCallbacks,
         ): SasayakiPreparedPlayback {
+            if (prepareThrows) {
+                throw IllegalStateException("player not ready")
+            }
             prepared = true
             engine.currentPositionMs = startPositionMs
             engine.callbacks = callbacks

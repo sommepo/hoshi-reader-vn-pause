@@ -12,7 +12,8 @@ Historical release notes before v1.3.0 live in [CHANGELOG_ARCHIVE.md](CHANGELOG_
   audiobook finishes. Blank-area taps pause or play only when no dictionary
   lookup is open; after that screen's audio ends, a blank tap goes to the next
   screen and plays that screen's audio. Rewind replays the current screen, and
-  the bottom playback buttons can be resized.
+  the bottom playback buttons can be resized. First Play and lookup playback
+  controls now start without a play/stop or auto-scroll warmup.
 
 ## [v1.3.3] - 2026-08-13
 

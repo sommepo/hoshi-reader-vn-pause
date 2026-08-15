@@ -58,6 +58,37 @@ class SasayakiDeferredPlaybackCommandTest {
     }
 
     @Test
+    fun laterCommandReplacesPendingCommandWhilePrepareIsInFlight() {
+        val gate = SasayakiDeferredPlaybackCommand()
+        val events = mutableListOf<String>()
+        var ready: (() -> Unit)? = null
+
+        gate.run(
+            hasPreparedEngine = false,
+            requestPlaybackEnvironment = { onReady ->
+                events += "prepare"
+                ready = onReady
+            },
+            runPreparedCommand = {
+                events += "start"
+                true
+            },
+        )
+        gate.run(
+            hasPreparedEngine = false,
+            requestPlaybackEnvironment = { events += "prepare-again" },
+            runPreparedCommand = {
+                events += "playCue"
+                true
+            },
+        )
+
+        ready?.invoke()
+
+        assertEquals(listOf("prepare", "playCue"), events)
+    }
+
+    @Test
     fun cancelDropsPendingCommandWhenOldControllerIsReleased() {
         val gate = SasayakiDeferredPlaybackCommand()
         val events = mutableListOf<String>()

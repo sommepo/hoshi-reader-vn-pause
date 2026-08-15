@@ -147,6 +147,7 @@ internal class SasayakiPlaybackServiceRuntime @Inject constructor(
                     onClearCue = onClearCue,
                 )
                 controller.updateMatchData(request.matchData)
+                controller.prepareAudio()
                 return controller
             }
         }
@@ -181,6 +182,7 @@ internal class SasayakiPlaybackServiceRuntime @Inject constructor(
         )
         activeKey = requestedKey
         activeController = controller
+        controller.prepareAudio()
         return controller
     }
 
@@ -260,11 +262,24 @@ internal class SasayakiPlaybackServiceRuntime @Inject constructor(
     }
 
     private fun ensurePlaybackServiceReady(onReady: () -> Unit) {
+        bindPlaybackService(onReady = onReady, retryOnFailure = true)
+    }
+
+    private fun bindPlaybackService(onReady: () -> Unit, retryOnFailure: Boolean) {
         val serviceConnection = ensurePlaybackServiceConnection()
         serviceConnection.addListener(
             {
-                runCatching { Futures.getDone(serviceConnection) }.getOrNull() ?: return@addListener
-                onReady()
+                val connected = runCatching { Futures.getDone(serviceConnection) }.getOrNull() != null
+                if (connected) {
+                    onReady()
+                    return@addListener
+                }
+                releasePlaybackServiceConnection()
+                if (retryOnFailure) {
+                    bindPlaybackService(onReady = onReady, retryOnFailure = false)
+                } else {
+                    onReady()
+                }
             },
             mainExecutor,
         )

@@ -613,6 +613,7 @@ fun ReaderWebView(
             sasayakiSettingsRepository.update { settings }
         }
         sasayakiPlayer?.autoScroll = settings.autoScroll
+        sasayakiPlayer?.pauseAtScreenEnd = settings.pauseAtScreenEnd
         sasayakiPlayer?.readerSkipButtonAction = settings.readerSkipButtonAction
     }
     fun goToNextChapter(): Boolean {

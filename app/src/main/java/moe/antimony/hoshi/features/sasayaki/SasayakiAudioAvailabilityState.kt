@@ -15,10 +15,12 @@ class SasayakiAudioAvailabilityState(
     var hasAudio by mutableStateOf(initialHasAudio)
         private set
 
-    fun markRestoreFailed(error: Throwable) {
+    fun markRestoreFailed(error: Throwable, keepHasAudio: Boolean = false) {
         errorMessage = error.localizedMessage?.let(UiText::Literal)
             ?: UiText.Resource(R.string.sasayaki_import_audiobook_failed)
-        hasAudio = false
+        if (!keepHasAudio) {
+            hasAudio = false
+        }
     }
 
     fun markRestoreSucceeded() {

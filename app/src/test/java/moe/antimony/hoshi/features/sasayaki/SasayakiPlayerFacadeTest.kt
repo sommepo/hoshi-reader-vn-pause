@@ -250,6 +250,10 @@ class SasayakiPlayerFacadeTest {
             commands += "playCue:${cue.id}:$stop"
         }
 
+        override fun prepareAudio() {
+            commands += "prepareAudio"
+        }
+
         override fun exportCueAudio(cue: SasayakiMatch, sentence: String): File? {
             commands += "exportCueAudio:${cue.id}:$sentence"
             return File("cue.m4a")
