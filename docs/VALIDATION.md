@@ -314,6 +314,19 @@ Validate relevant sync/update/Sasayaki changes with:
   E-ink VN rendering, skip controls across reader/sheet/system media controls,
   volume-key seek, safe-area playback controls, and e-ink cue/lookup overlays
   when those areas change.
+- Audiobook mode with a matched audiobook: the spoken line is highlighted and
+  centred above the transport bar with the other lines greyed out, line changes
+  scroll smoothly, a manual scroll is not pulled back while the finger is down
+  or for a moment after, a transport button re-centres at once,
+  previous/next/replay/play-pause work while playing and while paused,
+  a word tap opens lookup and pauses audio, and an automatic line change does
+  not close an open lookup. Check light, dark, and E-ink themes, and that the
+  saved writing direction and view mode are unchanged after leaving.
+- Audiobooks tab: only books with Sasayaki audio are listed, search finds a
+  chapter by ID number with and without leading zeros, by title text, and by
+  spoken text, a chapter result opens at that chapter and starts playing its
+  first line, the book play button resumes the saved audio position, and Back
+  returns to the tab with the query intact.
 - Sasayaki linked and copied Ogg Opus playback with `testdata/opus_test.opus`.
   Confirm its title and artist metadata, all 22 `CHAPTERnnn` chapter entries,
   current-chapter centering without first flashing the default list position

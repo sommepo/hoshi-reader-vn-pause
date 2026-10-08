@@ -25,7 +25,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import moe.antimony.hoshi.R
 import moe.antimony.hoshi.content.ContentLanguageProfile
+import moe.antimony.hoshi.epub.Bookmark
+import moe.antimony.hoshi.epub.EpubBook
+import moe.antimony.hoshi.features.reader.ReaderAudiobookSession
+import moe.antimony.hoshi.features.reader.ReaderChapterPosition
 import moe.antimony.hoshi.features.reader.ReaderLoadingPage
+import moe.antimony.hoshi.features.reader.ReaderStartPlayback
+import moe.antimony.hoshi.features.reader.chapterPositionForCharacter
 import moe.antimony.hoshi.features.reader.ReaderSettings
 import moe.antimony.hoshi.features.reader.ReaderWebView
 import kotlinx.coroutines.launch
@@ -41,6 +47,9 @@ import moe.antimony.hoshi.features.wallpaper.BookCoverWallpaperViewModel
 @Composable
 internal fun ReaderRouteDestination(
     bookId: String,
+    startCharacter: Int? = null,
+    audiobookSession: Boolean = false,
+    autoplay: Boolean = false,
     stateHolder: ReaderRouteStateHolder,
     readerSettings: ReaderSettings,
     onReaderSettingsChange: (ReaderSettings) -> Unit,
@@ -204,6 +213,17 @@ internal fun ReaderRouteDestination(
                     routeReaderSettings = settings
                 }
             }
+            var audiobookSessionState by remember(readyState.entry.metadata.id, audiobookSession) {
+                mutableStateOf(ReaderAudiobookSession(active = audiobookSession))
+            }
+            // A reload after a sync import keeps the listener where they are instead of jumping back.
+            val initialPosition = remember(readyState.book, startCharacter, state.loadGeneration) {
+                readerRouteInitialPosition(
+                    book = readyState.book,
+                    bookmark = readyState.bookmark,
+                    startCharacter = startCharacter.takeIf { state.loadGeneration == 0 },
+                )
+            }
             Box(modifier = modifier.fillMaxSize()) {
                 ReaderWebView(
                     bookId = bookId,
@@ -211,13 +231,22 @@ internal fun ReaderRouteDestination(
                     bookEntry = readyState.entry,
                     bookRoot = readyState.bookRoot,
                     bookCoverFile = readyState.bookCoverFile,
-                    initialChapterIndex = readyState.bookmark?.chapterIndex ?: 0,
-                    initialProgress = readyState.bookmark?.progress ?: 0.0,
-                    readerSettings = routeReaderSettings,
+                    initialChapterIndex = initialPosition.index,
+                    initialProgress = initialPosition.progress,
+                    readerSettings = audiobookSessionState.displayedSettings(routeReaderSettings),
                     onReaderSettingsChange = { settings ->
-                        routeReaderSettings = settings
-                        onReaderSettingsChange(settings)
+                        val change = audiobookSessionState.settingsChange(
+                            changed = settings,
+                            persisted = routeReaderSettings,
+                        )
+                        audiobookSessionState = change.session
+                        routeReaderSettings = change.persisted
+                        onReaderSettingsChange(change.persisted)
                     },
+                    startPlayback = readerRouteStartPlayback(
+                        autoplay = autoplay,
+                        startCharacter = startCharacter,
+                    ),
                     onReaderKeyEventHandlerChange = onReaderKeyEventHandlerChange,
                     onSaveBookmark = { chapterIndex, progress, statistics ->
                         autoSyncExportController.launchSave {
@@ -244,6 +273,29 @@ internal fun ReaderRouteDestination(
             }
         }
     }
+}
+
+internal fun readerRouteInitialPosition(
+    book: EpubBook,
+    bookmark: Bookmark?,
+    startCharacter: Int?,
+): ReaderChapterPosition =
+    if (startCharacter != null) {
+        book.chapterPositionForCharacter(startCharacter)
+    } else {
+        ReaderChapterPosition(
+            index = bookmark?.chapterIndex ?: 0,
+            progress = bookmark?.progress ?: 0.0,
+        )
+    }
+
+internal fun readerRouteStartPlayback(
+    autoplay: Boolean,
+    startCharacter: Int?,
+): ReaderStartPlayback? = when {
+    !autoplay -> null
+    startCharacter != null -> ReaderStartPlayback.FromInitialPosition
+    else -> ReaderStartPlayback.Resume
 }
 
 internal sealed interface ReaderRouteRenderState {

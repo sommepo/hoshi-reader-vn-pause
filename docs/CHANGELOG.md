@@ -14,6 +14,15 @@ Historical release notes before v1.3.0 live in [CHANGELOG_ARCHIVE.md](CHANGELOG_
   screen and plays that screen's audio. Rewind replays the current screen, and
   the bottom playback buttons can be resized. First Play and lookup playback
   controls now start without a play/stop or auto-scroll warmup.
+- Add an Audiobook reader mode for books with Sasayaki audio: the line being
+  spoken is highlighted in the middle of the screen, the lines above and below
+  are greyed out, and the view glides to each new line as the audio moves on.
+  Large buttons replay the line, go to the previous or next line, play or
+  pause, and open the chapter list. Tapping a word still looks it up and pauses
+  the audio.
+- Add an Audiobooks tab that lists every book with Sasayaki audio and searches
+  book titles, chapter titles, ID numbers, and the spoken text. Tapping a
+  chapter opens it in Audiobook mode and starts playing from its first line.
 
 ## [v1.3.3] - 2026-08-13
 

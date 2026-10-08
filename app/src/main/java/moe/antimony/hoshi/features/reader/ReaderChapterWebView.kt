@@ -303,13 +303,22 @@ internal fun ChapterWebView(
                 )
             }
             when (readerSettings.viewMode) {
-                ReaderViewMode.Continuous -> {
+                ReaderViewMode.Continuous,
+                ReaderViewMode.Audiobook,
+                -> {
                     webView.setOnTouchListener(
                         ContinuousScrollTouchListener(
                             settings = readerSettings,
                             shouldIgnoreReaderGesture = ::shouldIgnoreReaderGestureEvent,
                             onTap = { x, y -> selectAt(x, y) { currentOnReaderTapOutside.value() } },
-                            onScrollGesture = currentOnReaderInteraction.value,
+                            onScrollGesture = if (readerSettings.viewMode == ReaderViewMode.Audiobook) {
+                                {
+                                    currentOnReaderInteraction.value()
+                                    currentOnClearLookupPopup.value()
+                                }
+                            } else {
+                                currentOnReaderInteraction.value
+                            },
                             onNextChapter = {
                                 currentOnReaderInteraction.value()
                                 currentOnClearLookupPopup.value()
@@ -351,7 +360,13 @@ internal fun ChapterWebView(
                                     }
                                 }
                             },
-                            onClearLookupPopup = currentOnClearLookupPopup.value,
+                            // Audiobook mode scrolls by itself to follow the audio; only a scroll the
+                            // user makes (handled by the touch listener) should close a lookup.
+                            onClearLookupPopup = if (readerSettings.viewMode == ReaderViewMode.Audiobook) {
+                                {}
+                            } else {
+                                currentOnClearLookupPopup.value
+                            },
                             postDelayed = webView::postDelayed,
                             removeCallback = webView::removeCallbacks,
                             cancelIdleSave = {

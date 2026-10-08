@@ -18,6 +18,7 @@ internal data class ReaderWebAssets(
     val readerVnRangeMapJs: String,
     val readerVnSelectionProjectionJs: String,
     val readerSasayakiJs: String,
+    val readerAudiobookJs: String,
     val highlightsJs: String,
     val readerCss: String,
 ) {
@@ -46,6 +47,7 @@ internal data class ReaderWebAssets(
                 readerVnRangeMapJs = context.readAsset("hoshi-web/reader/reader-vn-range-map.js"),
                 readerVnSelectionProjectionJs = context.readAsset("hoshi-web/reader/reader-vn-selection-projection.js"),
                 readerSasayakiJs = context.readAsset("hoshi-web/reader/reader-sasayaki.js"),
+                readerAudiobookJs = context.readAsset("hoshi-web/reader/reader-audiobook.js"),
                 highlightsJs = context.readAsset("hoshi-web/reader/highlights.js"),
                 readerCss = context.readAsset("hoshi-web/reader/reader.css"),
             )

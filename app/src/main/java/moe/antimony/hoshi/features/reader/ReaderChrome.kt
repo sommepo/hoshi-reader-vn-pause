@@ -359,7 +359,10 @@ fun readerSasayakiBottomPlaybackControls(
         settings.bottomPlaybackControlScale,
     )
     return ReaderSasayakiBottomPlaybackControls(
-        visible = settings.enabled && settings.showReaderBottomPlaybackControls && hasAudio,
+        visible = settings.enabled &&
+            settings.showReaderBottomPlaybackControls &&
+            hasAudio &&
+            viewMode != ReaderViewMode.Audiobook,
         rowHeightDp = scaledSasayakiBottomPlaybackDp(
             baseDp = metrics.bottomSafeAreaDp,
             scale = scale,
@@ -399,6 +402,47 @@ private fun readerSasayakiBottomPlaybackButtonWidthDp(bottomSafeAreaDp: Int): In
 
 private fun readerSasayakiBottomPlaybackIconSizeDp(bottomSafeAreaDp: Int): Int =
     (bottomSafeAreaDp / 3 + 7).coerceIn(14, 28)
+
+data class ReaderAudiobookTransport(
+    val visible: Boolean,
+    val primaryButtonSizeDp: Int,
+    val secondaryButtonSizeDp: Int,
+    val tertiaryButtonSizeDp: Int,
+    val barHeightDp: Int,
+    val bottomOffsetDp: Int,
+    val bottomSafeAreaDp: Int,
+) {
+    /** Height at the bottom of the reader that the bar and the chrome row beneath it cover. */
+    val reservedBottomDp: Int = if (visible) bottomOffsetDp + barHeightDp else 0
+
+    /** Part of [reservedBottomDp] that overlaps the reader content above the bottom safe area. */
+    val contentOverlapDp: Int = (reservedBottomDp - bottomSafeAreaDp).coerceAtLeast(0)
+}
+
+/** Content overlap of a visible transport bar; it does not depend on the configured safe area. */
+internal fun readerAudiobookDefaultContentOverlapDp(): Int =
+    readerAudiobookTransport(
+        viewMode = ReaderViewMode.Audiobook,
+        sasayakiEnabled = true,
+        hasAudio = true,
+        metrics = readerBottomChromeMetrics(),
+    ).contentOverlapDp
+
+fun readerAudiobookTransport(
+    viewMode: ReaderViewMode,
+    sasayakiEnabled: Boolean,
+    hasAudio: Boolean,
+    metrics: ReaderBottomChromeMetrics,
+): ReaderAudiobookTransport =
+    ReaderAudiobookTransport(
+        visible = viewMode == ReaderViewMode.Audiobook && sasayakiEnabled && hasAudio,
+        primaryButtonSizeDp = 84,
+        secondaryButtonSizeDp = 68,
+        tertiaryButtonSizeDp = 52,
+        barHeightDp = 104,
+        bottomOffsetDp = metrics.menuBottomOffsetDp,
+        bottomSafeAreaDp = metrics.bottomSafeAreaDp,
+    )
 
 fun readerSasayakiBottomSkipButtonActions(
     verticalWriting: Boolean,

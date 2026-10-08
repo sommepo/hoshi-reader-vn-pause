@@ -107,4 +107,29 @@ class AppRouteBackStackTest {
             backStack,
         )
     }
+
+    @Test
+    fun mediaSessionReturnKeepsAnAudiobookReaderThatIsAlreadyShowingTheBook() {
+        val reader = AppRoute.ReaderRoute("book-a", startCharacter = 120, audiobook = true, autoplay = true)
+        val backStack = mutableListOf<NavKey>(AppRoute.BooksRoute, reader)
+
+        backStack.returnFromMediaSession("book-a")
+
+        assertEquals(listOf(AppRoute.BooksRoute, reader), backStack)
+    }
+
+    @Test
+    fun audiobookReaderOpensAboveTheAudiobooksTabAndReplacesAnEarlierReader() {
+        val first = AppRoute.ReaderRoute("book-a", startCharacter = 0, audiobook = true, autoplay = true)
+        val second = AppRoute.ReaderRoute("book-b", startCharacter = 40, audiobook = true, autoplay = true)
+        val backStack = mutableListOf<NavKey>(AppRoute.AudiobooksRoute)
+
+        backStack.openAudiobookReaderRoute(first)
+        assertEquals(true, backStack.isShowingReaderFor("book-a"))
+        backStack.openAudiobookReaderRoute(second)
+
+        assertEquals(listOf(AppRoute.AudiobooksRoute, second), backStack)
+        assertEquals(false, backStack.isShowingReaderFor("book-a"))
+        assertEquals(true, backStack.isShowingReaderFor("book-b"))
+    }
 }

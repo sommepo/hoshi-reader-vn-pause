@@ -33,6 +33,20 @@ In **Visual Novel** mode with a Sasayaki audiobook (audio + SRT match):
 
 It is **on by default**. Turn it off in Sasayaki settings if you want normal uninterrupted read-along. Dictionary taps still look up words. It only applies in VN mode; paginated and continuous reading are unchanged.
 
+## Audiobook mode and the Audiobooks tab
+
+This fork also has a line-by-line listening view for books with a Sasayaki audiobook (audio + SRT match):
+
+- **Audiobook mode** (Reader Appearance → Mode → Listen) shows the chapter as a column of lines. The line being spoken is highlighted in the middle of the screen, the other lines are greyed out, and the view glides to each new line.
+- Large buttons replay the line, go to the previous or next line, play or pause, and open the chapter list. Tapping a word looks it up and pauses the audio.
+- The **Audiobooks** tab lists every book that has audio and searches book titles, chapter titles, ID numbers and the spoken text. Tapping a chapter opens it in Audiobook mode and starts playing.
+
+Books that work best with it:
+
+- One EPUB per collection, with one XHTML file and one table-of-contents entry per dialogue. Put the ID in the entry title, for example `N3-042 〜てしまう`; searching `42`, `n3 42` or `てしまう` then finds it.
+- One paragraph per spoken line.
+- One audio file (MP3, M4B or Opus) and one SRT for the whole book, added from the Sasayaki menu. Each SRT cue should hold the text of one line, in book order.
+
 <div align="center">
 
 <table>
@@ -97,6 +111,7 @@ It is **on by default**. Turn it off in Sasayaki settings if you want normal uni
 - Follow highlights with automatic page turning.
 - Control playback speed, skip actions, and Android media controls.
 - **Push to Continue (this fork):** in VN mode, pause when the current screen’s audio ends and wait for a tap before continuing.
+- **Audiobook mode (this fork):** a centred, line-by-line listening view with large controls, plus a searchable Audiobooks tab.
 
 ### Data Sync And Migration
 

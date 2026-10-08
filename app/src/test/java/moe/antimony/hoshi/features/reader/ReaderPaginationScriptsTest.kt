@@ -162,4 +162,27 @@ class ReaderPaginationScriptsTest {
             ReaderPaginationScripts.showSasayakiMediaStopInvocation("""{"scroll":800}"""),
         )
     }
+
+    @Test
+    fun audiobookModeLoadsTheLineFollowRuntimeOnTopOfTheScrollingReader() {
+        val audiobook = ReaderPaginationScripts.shellScript(
+            settings = ReaderSettings(viewMode = ReaderViewMode.Audiobook),
+        )
+        val continuous = ReaderPaginationScripts.shellScript(
+            settings = ReaderSettings(viewMode = ReaderViewMode.Continuous),
+        )
+
+        assertFalse(audiobook.contains("__HOSHI_"))
+        assertFalse(continuous.contains("__HOSHI_"))
+        assertTrue(audiobook.contains("resumeAudiobookFollow"))
+        assertFalse(continuous.contains("resumeAudiobookFollow"))
+        assertTrue(audiobook.contains("audiobookBottomInset = ${readerAudiobookDefaultContentOverlapDp()};"))
+    }
+
+    @Test
+    fun audiobookCommandsAreSafeBeforeTheReaderScriptExists() {
+        assertTrue(ReaderPaginationScripts.resumeAudiobookFollowInvocation().startsWith("if (window.hoshiReader"))
+        assertTrue(ReaderPaginationScripts.audiobookBottomInsetInvocation(158).contains("setAudiobookBottomInset(158)"))
+        assertTrue(ReaderPaginationScripts.audiobookBottomInsetInvocation(-4).contains("setAudiobookBottomInset(0)"))
+    }
 }

@@ -103,6 +103,13 @@ __HOSHI_READER_MEDIA_SEMANTICS_SCRIPT__
     this.nodeStartOffsets = offsets;
     this.nodeStartRawOffsets = rawOffsets;
   },
+  // Block-axis offset that separates read from unread text in horizontal writing.
+  progressViewportEdge: function() {
+    return 0;
+  },
+  restoreScrollBlock: function(progress) {
+    return progress >= 0.999999 ? 'end' : 'start';
+  },
   countCharsBeforeViewport: function(node, vertical) {
     var text = node.textContent || '';
     var totalChars = this.countChars(text);
@@ -125,8 +132,9 @@ __HOSHI_READER_MEDIA_SEMANTICS_SCRIPT__
       if (minStart >= window.innerWidth) return totalChars;
       if (maxEnd <= window.innerWidth || minStart === Infinity) return 0;
     } else {
-      if (maxEnd <= 0) return totalChars;
-      if (minStart >= 0 || minStart === Infinity) return 0;
+      var edge = this.progressViewportEdge();
+      if (maxEnd <= edge) return totalChars;
+      if (minStart >= edge || minStart === Infinity) return 0;
     }
     var offsets = [];
     var prefixCounts = [0];
@@ -161,7 +169,7 @@ __HOSHI_READER_MEDIA_SEMANTICS_SCRIPT__
     range.setEnd(node, offset + char.length);
     var rect = this.getRect(range);
     if (!rect || rect.width <= 0 || rect.height <= 0) return false;
-    return vertical ? rect.left >= window.innerWidth : rect.bottom <= 0;
+    return vertical ? rect.left >= window.innerWidth : rect.bottom <= this.progressViewportEdge();
   },
   scrollToTarget: function(target) {
     var rect = this.getRect(target);
@@ -416,7 +424,7 @@ __HOSHI_READER_SASAYAKI_SCRIPT__
       marker.style.height = '1px';
       range.insertNode(marker);
       marker.scrollIntoView({
-        block: progress >= 0.999999 ? 'end' : 'start',
+        block: this.restoreScrollBlock(progress),
         inline: 'nearest',
         behavior: 'instant'
       });
@@ -457,6 +465,7 @@ __HOSHI_READER_SASAYAKI_SCRIPT__
   }
 };
 __HOSHI_HIGHLIGHTS_SCRIPT__
+__HOSHI_READER_AUDIOBOOK_SCRIPT__
 window.hoshiReader.initialize = function() {
   if (window.hoshiReader.didInitialize) return;
   window.hoshiReader.didInitialize = true;

@@ -5,6 +5,7 @@ import vm from 'node:vm';
 
 const readerPaginatedUrl = new URL('../../main/assets/hoshi-web/reader/reader-paginated.js', import.meta.url);
 const readerContinuousUrl = new URL('../../main/assets/hoshi-web/reader/reader-continuous.js', import.meta.url);
+const readerAudiobookUrl = new URL('../../main/assets/hoshi-web/reader/reader-audiobook.js', import.meta.url);
 const readerSasayakiUrl = new URL('../../main/assets/hoshi-web/reader/reader-sasayaki.js', import.meta.url);
 const readerTextSemanticsUrl = new URL('../../main/assets/hoshi-web/reader/reader-text-semantics.js', import.meta.url);
 const readerDomTextUrl = new URL('../../main/assets/hoshi-web/reader/reader-dom-text.js', import.meta.url);
@@ -27,6 +28,8 @@ function readerSource(url, options = {}) {
     return fs.readFileSync(url, 'utf8')
         .replace('__HOSHI_HIGHLIGHTS_SCRIPT__', options.highlightsScript ?? '')
         .replace('__HOSHI_READER_SASAYAKI_SCRIPT__', readerSasayaki)
+        .replace('__HOSHI_READER_AUDIOBOOK_SCRIPT__', options.audiobookMode ? fs.readFileSync(readerAudiobookUrl, 'utf8') : '')
+        .replaceAll('__HOSHI_AUDIOBOOK_BOTTOM_INSET__', String(options.audiobookBottomInset ?? 0))
         .replace('__HOSHI_READER_TEXT_SEMANTICS_SCRIPT__', options.textSemanticsScript ?? readerTextSemanticsSource())
         .replace('__HOSHI_READER_DOM_TEXT_SCRIPT__', options.domTextScript ?? readerDomTextSource())
         .replace('__HOSHI_READER_MEDIA_SEMANTICS_SCRIPT__', options.mediaSemanticsScript ?? readerMediaSemanticsSource())
@@ -1223,4 +1226,146 @@ test('reader initialization requires XHTML document.head like iOS', () => {
 
         assert.throws(() => reader.initialize(), /appendChild/);
     }
+});
+
+function loadAudiobookReader(lines, options = {}) {
+    const body = new TestElement('body');
+    lines.forEach((line) => {
+        const text = new TestText(line.text);
+        text.rects = [testRect(line.top, line.bottom)];
+        body.appendChild(text);
+    });
+    const loaded = loadReader(body, readerContinuousUrl, {
+        writingMode: 'horizontal-tb',
+        audiobookMode: true,
+        audiobookBottomInset: options.bottomInset ?? 0,
+    });
+    loaded.reader.isEInkMode = () => false;
+    loaded.document.documentElement.scrollTop = 0;
+    loaded.document.documentElement.scrollHeight = options.scrollHeight ?? 4_000;
+    loaded.scrollCalls = [];
+    const scrollTo = loaded.window.scrollTo;
+    loaded.window.scrollTo = function(options) {
+        loaded.scrollCalls.push(options);
+        scrollTo.call(this, options);
+    };
+    let start = 0;
+    loaded.cues = lines.map((line, index) => {
+        const cue = { id: `cue${index}`, start, length: line.text.length };
+        start += line.text.length;
+        return cue;
+    });
+    loaded.reader.applySasayakiCues(loaded.cues);
+    lines.forEach((line, index) => {
+        loaded.reader.cueWrappers.get(`cue${index}`)[0].rect = testRect(line.top, line.bottom);
+    });
+    return loaded;
+}
+
+test('continuous reader keeps its own progress edge and restore alignment without audiobook mode', () => {
+    const { reader } = loadReader(new TestElement('body'), readerContinuousUrl, { writingMode: 'horizontal-tb' });
+
+    assert.equal(reader.audiobookMode, undefined);
+    assert.equal(reader.progressViewportEdge(), 0);
+    assert.equal(reader.restoreScrollBlock(0.5), 'start');
+    assert.equal(reader.restoreScrollBlock(1), 'end');
+});
+
+test('audiobook mode centres the spoken line above the transport bar', () => {
+    const { reader, window, scrollCalls, cues } = loadAudiobookReader(
+        [
+            { text: '一二', top: 300, bottom: 340 },
+            { text: '三四五', top: 900, bottom: 940 },
+        ],
+        { bottomInset: 200 },
+    );
+
+    const progress = reader.highlightSasayakiCue(cues[1], true);
+
+    // Visible height is 800 - 200, so the line's middle (920) belongs at y = 300.
+    assert.equal(window.scrollY, 620);
+    assert.equal(progress, 2 / 5);
+    assert.equal(reader.cueWrappers.get('cue1')[0].classList.contains('hoshi-sasayaki-active'), true);
+    assert.equal(scrollCalls.length, 1);
+});
+
+test('audiobook mode animates between nearby lines but jumps on first show and long distances', () => {
+    const { reader, scrollCalls, cues } = loadAudiobookReader(
+        [
+            { text: '一二', top: 600, bottom: 640 },
+            { text: '三四', top: 700, bottom: 740 },
+            { text: '五六', top: 3_900, bottom: 3_940 },
+        ],
+        { scrollHeight: 8_000 },
+    );
+
+    reader.highlightSasayakiCue(cues[0], true);
+    reader.highlightSasayakiCue(cues[1], true);
+    reader.highlightSasayakiCue(cues[2], true);
+
+    assert.deepEqual(
+        scrollCalls.map((call) => call.behavior),
+        ['instant', 'smooth', 'instant'],
+    );
+});
+
+test('audiobook mode highlights without scrolling when the cue is not revealed', () => {
+    const { reader, scrollCalls, cues } = loadAudiobookReader([
+        { text: '一二', top: 900, bottom: 940 },
+    ]);
+
+    assert.equal(reader.highlightSasayakiCue(cues[0], false), null);
+
+    assert.equal(reader.activeCueId, 'cue0');
+    assert.equal(scrollCalls.length, 0);
+});
+
+test('audiobook mode does not fight a manual scroll and re-centres when following resumes', () => {
+    const { reader, window, scrollCalls, cues } = loadAudiobookReader([
+        { text: '一二', top: 900, bottom: 940 },
+    ]);
+    reader.audiobookTouchActive = true;
+
+    const progress = reader.highlightSasayakiCue(cues[0], true);
+
+    assert.equal(progress, 0);
+    assert.equal(scrollCalls.length, 0);
+
+    reader.resumeAudiobookFollow();
+
+    assert.equal(scrollCalls.length, 1);
+    assert.equal(window.scrollY, 520);
+});
+
+test('audiobook mode measures progress and restores position at the focus line', () => {
+    const body = new TestElement('body');
+    const read = new TestText('一二');
+    read.rects = [testRect(100, 140)];
+    const unread = new TestText('三四五');
+    unread.rects = [testRect(500, 540)];
+    body.appendChild(read);
+    body.appendChild(unread);
+    const { reader, document } = loadReader(body, readerContinuousUrl, {
+        writingMode: 'horizontal-tb',
+        audiobookMode: true,
+        audiobookBottomInset: 100,
+    });
+    document.documentElement.scrollTop = 0;
+
+    assert.equal(reader.progressViewportEdge(), 350);
+    assert.equal(reader.calculateProgress(), 2 / 5);
+    assert.equal(reader.restoreScrollBlock(0.5), 'center');
+});
+
+test('audiobook mode re-centres the active line when the transport bar inset changes', () => {
+    const { reader, window, cues } = loadAudiobookReader([
+        { text: '一二', top: 900, bottom: 940 },
+    ]);
+    reader.highlightSasayakiCue(cues[0], true);
+    assert.equal(window.scrollY, 520);
+    reader.cueWrappers.get('cue0')[0].rect = testRect(380, 420);
+
+    reader.setAudiobookBottomInset(160);
+
+    assert.equal(window.scrollY, 600);
 });

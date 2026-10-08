@@ -15,6 +15,7 @@ class AppRouteTest {
         val routeNames = listOf(
             "MainRoute",
             "BooksRoute",
+            "AudiobooksRoute",
             "DictionaryRoute",
             "StatisticsRoute",
             "SettingsRoute",
@@ -34,8 +35,18 @@ class AppRouteTest {
     }
 
     @Test
-    fun readerRoutesCarryOnlyStableBookIds() {
-        assertRouteConstructor("ReaderRoute", String::class.java)
+    fun readerRoutesCarryStableBookIdsAndPrimitiveLaunchOptions() {
+        assertRouteConstructor(
+            "ReaderRoute",
+            String::class.java,
+            Int::class.javaObjectType,
+            Boolean::class.javaPrimitiveType!!,
+            Boolean::class.javaPrimitiveType!!,
+        )
+        assertEquals(
+            AppRoute.ReaderRoute("book", startCharacter = null, audiobook = false, autoplay = false),
+            AppRoute.ReaderRoute("book"),
+        )
     }
 
     @Test

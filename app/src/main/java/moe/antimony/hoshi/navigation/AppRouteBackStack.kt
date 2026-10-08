@@ -57,7 +57,7 @@ internal fun MutableList<NavKey>.returnFromMediaSession(
     bookId: String,
     onReaderRouteRemoved: () -> Unit = {},
 ) {
-    if (lastOrNull() == AppRoute.ReaderRoute(bookId)) {
+    if (isShowingReaderFor(bookId)) {
         return
     }
     replaceWithTopLevelRoute(
@@ -66,6 +66,14 @@ internal fun MutableList<NavKey>.returnFromMediaSession(
     )
     add(AppRoute.ReaderRoute(bookId))
 }
+
+internal fun MutableList<NavKey>.openAudiobookReaderRoute(route: AppRoute.ReaderRoute) {
+    replaceWithTopLevelRoute(AppRoute.AudiobooksRoute)
+    add(route)
+}
+
+internal fun List<NavKey>.isShowingReaderFor(bookId: String): Boolean =
+    (lastOrNull() as? AppRoute.ReaderRoute)?.bookId == bookId
 
 private fun List<NavKey>.containsReaderRoute(): Boolean =
     any { route -> route is AppRoute.ReaderRoute }

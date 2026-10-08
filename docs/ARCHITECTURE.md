@@ -11,7 +11,7 @@ refactor goals belong in `docs/ARCHITECTURE_REFACTORING.md`.
 - The app is a single Android application module under `app`.
 - UI is Jetpack Compose + Material 3.
 - Navigation uses Navigation3 typed route keys, `AppShell`, and `NavDisplay`.
-  Top-level Books, Dictionary, Statistics, and Settings tabs each own an
+  Top-level Books, Audiobooks, Dictionary, Statistics, and Settings tabs each own an
   independent Nav3 back stack with its own saveable entry state and per-entry
   ViewModel stores. The shared main navigation chrome is owned by a Nav3 scene
   decorator around top-level root scenes, while Reader and Settings detail
@@ -104,6 +104,15 @@ refactor goals belong in `docs/ARCHITECTURE_REFACTORING.md`.
 - Reader layout modes are WebView-backed assets for paginated, continuous, and
   VN reading. Kotlin selects the asset, injects typed settings, and keeps
   persisted progress as chapter progress mapped to whole-book character count.
+- Audiobook mode is a fourth view mode layered on the continuous asset, not on
+  VN. `reader-audiobook.js` is injected into `reader-continuous.js` only for
+  that mode and overrides cue highlighting to centre the active Sasayaki cue,
+  measures progress at the focus line, and restores to the centre. Kotlin lays
+  it out through `ReaderSettings.layoutSettings` (always horizontal, persisted
+  writing direction untouched), forces cue following and lookup auto-pause, and
+  replaces the small safe-area playback buttons with `ReaderAudiobookTransportBar`.
+  A reader opened from the Audiobooks tab applies the mode through
+  `ReaderAudiobookSession` without changing the saved view mode.
 - Reader `bookinfo.json` sidecars persist whole-book/spine character counts plus
   optional iOS-compatible TOC fragment offsets and a first-appearance raster
   image inventory. Contents rows, chapter progress, and chapter time remaining
@@ -189,6 +198,14 @@ refactor goals belong in `docs/ARCHITECTURE_REFACTORING.md`.
   and network preflight; Books keeps remote-only Google Drive books as
   `RemoteBookEntry` models rather than local `BookEntry` placeholders.
 - Audio playback uses Media3/ExoPlayer with controller/repository boundaries.
+- The Audiobooks tab lists books whose Sasayaki playback sidecar names an audio
+  source. `AudiobookLibraryRepository` reads chapter titles and spoken text from
+  the parsed EPUB table of contents and caches them per book under the app cache
+  directory, keyed by the EPUB file's size and modification time; nothing is
+  added to the iOS-compatible book sidecars. Search is an in-memory match over
+  book titles, chapter titles, and chapter text behind `AudiobooksViewModel`.
+  Its reader routes live on the Audiobooks back stack and carry the start
+  character, Audiobook-mode session flag, and autoplay request.
 - Sasayaki accepts MP3, M4B, and Ogg Opus audiobook sources. One repository
   inspection returns format, metadata, chapters, and static duration for
   seekable sources before playback starts. M4B inspection reads MP4 metadata, `moov/udta/chpl`, and

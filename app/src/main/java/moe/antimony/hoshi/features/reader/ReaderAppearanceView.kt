@@ -334,13 +334,15 @@ private fun ReaderAppearanceContent(
                     val paginatedLabel = stringResource(R.string.reader_appearance_paginated)
                     val continuousLabel = stringResource(R.string.reader_appearance_continuous)
                     val visualNovelLabel = stringResource(R.string.reader_appearance_visual_novel)
+                    val audiobookLabel = stringResource(R.string.reader_appearance_audiobook)
                     SegmentedRow(
                         label = stringResource(R.string.reader_appearance_mode),
-                        options = listOf(paginatedLabel, continuousLabel, visualNovelLabel),
+                        options = listOf(paginatedLabel, continuousLabel, visualNovelLabel, audiobookLabel),
                         selected = when (settings.viewMode) {
                             ReaderViewMode.Paginated -> paginatedLabel
                             ReaderViewMode.Continuous -> continuousLabel
                             ReaderViewMode.VisualNovel -> visualNovelLabel
+                            ReaderViewMode.Audiobook -> audiobookLabel
                         },
                         onSelected = { label ->
                             onSettingsChange(
@@ -348,6 +350,7 @@ private fun ReaderAppearanceContent(
                                     viewMode = when (label) {
                                         continuousLabel -> ReaderViewMode.Continuous
                                         visualNovelLabel -> ReaderViewMode.VisualNovel
+                                        audiobookLabel -> ReaderViewMode.Audiobook
                                         else -> ReaderViewMode.Paginated
                                     },
                                 ),
@@ -355,7 +358,7 @@ private fun ReaderAppearanceContent(
                         },
                         palette = palette,
                     )
-                    if (settings.viewMode == ReaderViewMode.Continuous) {
+                    if (settings.viewMode.usesContinuousScroll) {
                         AppearanceDivider(palette)
                         SliderRow(
                             label = stringResource(R.string.reader_appearance_chapter_swipe_distance),

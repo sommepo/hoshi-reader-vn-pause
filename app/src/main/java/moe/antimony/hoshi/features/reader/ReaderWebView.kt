@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -108,6 +109,7 @@ fun ReaderWebView(
     onForegroundAutoSyncImport: () -> Unit = {},
     onTextSelected: (ReaderSelectionData) -> Int? = { null },
     contentLanguageProfile: ContentLanguageProfile = ContentLanguageProfile.Default,
+    startPlayback: ReaderStartPlayback? = null,
     onClose: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -211,6 +213,9 @@ fun ReaderWebView(
         }
     }
     val effectiveSettings = stateHolder.effectiveSettings
+    val layoutSettings = effectiveSettings.layoutSettings
+    val audiobookMode = effectiveSettings.viewMode == ReaderViewMode.Audiobook
+    var activeSasayakiCue by remember(book) { mutableStateOf<SasayakiMatch?>(null) }
     val readerPosition = stateHolder.readerPosition
     val lookupPopups = stateHolder.lookupPopups
     var readerPopupHistories by remember { mutableStateOf<Map<String, ReaderPopupHistoryCounts>>(emptyMap()) }
@@ -492,7 +497,7 @@ fun ReaderWebView(
             dictionaryStyles = dictionaryStyles,
             lookup = dictionaryRepository::lookup,
             options = LookupPopupOptions(
-                isVertical = effectiveSettings.verticalWriting,
+                isVertical = layoutSettings.verticalWriting,
                 isFullWidth = effectiveSettings.popupFullWidth,
                 width = effectiveSettings.popupWidth,
                 height = effectiveSettings.popupHeight,
@@ -612,7 +617,7 @@ fun ReaderWebView(
         scope.launch {
             sasayakiSettingsRepository.update { settings }
         }
-        sasayakiPlayer?.autoScroll = settings.autoScroll
+        sasayakiPlayer?.autoScroll = settings.autoScroll || audiobookMode
         sasayakiPlayer?.pauseAtScreenEnd = settings.pauseAtScreenEnd
         sasayakiPlayer?.readerSkipButtonAction = settings.readerSkipButtonAction
     }
@@ -686,7 +691,7 @@ fun ReaderWebView(
         val player = sasayakiPlayer
         if (stateHolder.shouldPauseSasayakiForLookup(
                 enabled = sasayakiSettings.enabled,
-                autoPause = sasayakiSettings.autoPause,
+                autoPause = sasayakiSettings.autoPause || audiobookMode,
                 isPlaying = player?.isPlaying == true,
             )
         ) {
@@ -1363,9 +1368,12 @@ fun ReaderWebView(
         reveal: Boolean,
         source: SasayakiCueRevealSource,
     ) {
+        activeSasayakiCue = cue
+        // Audiobook mode always follows the spoken line, whatever the auto-scroll preference says.
+        val followCue = reveal || audiobookMode
         val targetWebView = webView
         if (targetWebView == null || stateHolder.isWebViewRestoring) {
-            pendingSasayakiCue = PendingSasayakiCue(cue = cue, reveal = reveal, source = source)
+            pendingSasayakiCue = PendingSasayakiCue(cue = cue, reveal = followCue, source = source)
             return
         }
         pendingSasayakiCue = null
@@ -1373,7 +1381,7 @@ fun ReaderWebView(
         sasayakiAutoPageJob = scope.launch {
             val progress = revealSasayakiCueWithMediaStops(
                 cue = cue,
-                reveal = reveal,
+                reveal = followCue,
                 source = source,
             )
             progress.progress?.let {
@@ -1414,6 +1422,7 @@ fun ReaderWebView(
                 },
                 onClearCue = {
                     cancelSasayakiAutoPage()
+                    activeSasayakiCue = null
                     pendingSasayakiCue = null
                     pendingSasayakiRestoreCue = null
                     webView?.evaluateJavascript(ReaderPaginationScripts.clearSasayakiCueInvocation(), null)
@@ -1443,9 +1452,25 @@ fun ReaderWebView(
     DisposableEffect(Unit) {
         onDispose { sasayakiPlayer?.release() }
     }
-    sasayakiPlayer?.autoScroll = sasayakiSettings.autoScroll
+    sasayakiPlayer?.autoScroll = sasayakiSettings.autoScroll || audiobookMode
     sasayakiPlayer?.pauseAtScreenEnd = sasayakiSettings.pauseAtScreenEnd
     sasayakiPlayer?.readerSkipButtonAction = sasayakiSettings.readerSkipButtonAction
+    var startPlaybackHandled by rememberSaveable(bookId, startPlayback) { mutableStateOf(false) }
+    LaunchedEffect(sasayakiPlayer, sasayakiPlayer?.hasAudio, startPlayback, sasayakiSettings.enabled) {
+        val player = sasayakiPlayer ?: return@LaunchedEffect
+        val request = startPlayback ?: return@LaunchedEffect
+        if (startPlaybackHandled || !player.hasAudio || !sasayakiSettings.enabled) return@LaunchedEffect
+        startPlaybackHandled = true
+        when (request) {
+            ReaderStartPlayback.FromInitialPosition -> readerAudiobookStartCue(
+                book = book,
+                matchData = sasayakiMatchData,
+                chapterIndex = clampedInitialIndex,
+                progress = initialProgress,
+            )?.let { cue -> player.playCue(cue, stop = false) }
+            ReaderStartPlayback.Resume -> if (!player.isPlaying) player.togglePlayback()
+        }
+    }
     val currentReaderKeyHandler = rememberUpdatedState<(KeyEvent) -> Boolean> { event ->
         val keyEvent = readerHardwareKeyEventForKeyEvent(
             keyCode = event.keyCode,
@@ -1609,7 +1634,7 @@ fun ReaderWebView(
         viewMode = effectiveSettings.viewMode,
     )
     val sasayakiBottomSkipButtonActions = readerSasayakiBottomSkipButtonActions(
-        verticalWriting = effectiveSettings.verticalWriting,
+        verticalWriting = layoutSettings.verticalWriting,
         reverseVerticalReaderSkipButtons = sasayakiSettings.reverseVerticalReaderSkipButtons,
     )
     val sasayakiScreenBoundControls = sasayakiBindsAudioToVisibleVnScreen(
@@ -1636,6 +1661,35 @@ fun ReaderWebView(
             return
         }
         sasayakiPlayer?.togglePlayback()
+    }
+    val audiobookTransport = readerAudiobookTransport(
+        viewMode = effectiveSettings.viewMode,
+        sasayakiEnabled = sasayakiSettings.enabled,
+        hasAudio = sasayakiPlayer?.hasAudio == true,
+        metrics = bottomChromeMetrics,
+    )
+    fun resumeAudiobookFollow() {
+        webView?.evaluateJavascript(ReaderPaginationScripts.resumeAudiobookFollowInvocation(), null)
+    }
+    fun seekAudiobookLine(forward: Boolean) {
+        val player = sasayakiPlayer ?: return
+        resumeAudiobookFollow()
+        if (sasayakiMatchData?.matches.isNullOrEmpty()) {
+            if (forward) player.nextCue() else player.previousCue()
+            return
+        }
+        readerAudiobookAdjacentCue(
+            matchData = sasayakiMatchData,
+            activeCue = activeSasayakiCue,
+            playbackTime = player.currentTime - player.delay,
+            forward = forward,
+        )?.let { cue -> player.seekTo(cue.startTime + player.delay) }
+    }
+    fun replayActiveSasayakiCue() {
+        val player = sasayakiPlayer ?: return
+        val cue = activeSasayakiCue ?: return
+        resumeAudiobookFollow()
+        player.playCue(cue, stop = !player.isPlaying)
     }
     val showSasayakiTopToggle = sasayakiSettings.enabled &&
         sasayakiSettings.showReaderToggle &&
@@ -1690,6 +1744,14 @@ fun ReaderWebView(
                 stableStatusBarInsetDp = stableStatusBarPaddingDp,
             ),
     )
+    val audiobookWebBottomInsetDp = audiobookTransport.contentOverlapDp
+    LaunchedEffect(webView, stateHolder.isWebViewRestoring, audiobookMode, audiobookWebBottomInsetDp) {
+        if (!audiobookMode || stateHolder.isWebViewRestoring) return@LaunchedEffect
+        webView?.evaluateJavascript(
+            ReaderPaginationScripts.audiobookBottomInsetInvocation(audiobookWebBottomInsetDp),
+            null,
+        )
+    }
     val restoreLoadingPresentation = readerRestoreLoadingPresentation(stateHolder.isWebViewRestoring)
     Box(
         modifier = modifier
@@ -1705,8 +1767,8 @@ fun ReaderWebView(
                 ),
         ) {
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                val viewportHorizontalPadding = maxWidth * effectiveSettings.continuousViewportHorizontalPaddingRatio.toFloat()
-                val viewportVerticalPadding = maxHeight * effectiveSettings.continuousViewportVerticalPaddingRatio.toFloat()
+                val viewportHorizontalPadding = maxWidth * layoutSettings.continuousViewportHorizontalPaddingRatio.toFloat()
+                val viewportVerticalPadding = maxHeight * layoutSettings.continuousViewportVerticalPaddingRatio.toFloat()
                 val readerLookupPopupViewport = ReaderLookupPopupViewport(
                     width = (maxWidth.value - viewportHorizontalPadding.value * 2f).coerceAtLeast(0f).toDouble(),
                     height = (maxHeight.value - viewportVerticalPadding.value * 2f).coerceAtLeast(0f).toDouble(),
@@ -1715,7 +1777,7 @@ fun ReaderWebView(
                     rootSelectionHighlight,
                     popupDarkMode,
                     effectiveSettings.eInkMode,
-                    effectiveSettings.verticalWriting,
+                    layoutSettings.verticalWriting,
                 ) {
                     rootSelectionHighlight?.let { highlight ->
                         ReaderLookupPopupRootHighlightPayload.fromReaderRects(
@@ -1723,7 +1785,7 @@ fun ReaderWebView(
                             rects = highlight.rects,
                             darkMode = popupDarkMode,
                             eInkMode = effectiveSettings.eInkMode,
-                            verticalWriting = effectiveSettings.verticalWriting,
+                            verticalWriting = layoutSettings.verticalWriting,
                         )
                     }
                 }
@@ -1798,7 +1860,7 @@ fun ReaderWebView(
                         scanNonJapaneseText = dictionarySettings.scanNonJapaneseText,
                         selectionScanLength = readerSelectionMaxLength(dictionarySettings),
                         contentLanguageProfile = popupContentLanguageProfile,
-                        readerSettings = effectiveSettings,
+                        readerSettings = layoutSettings,
                         chapterHighlightsJson = ReaderHighlights.chapterHighlightsJson(
                             highlights = highlights.orEmpty(),
                             bookInfo = book.bookInfo,
@@ -1903,6 +1965,27 @@ fun ReaderWebView(
             onSasayakiSkipForward = { performSasayakiBottomSkipAction(sasayakiBottomSkipButtonActions.right) },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
+        if (audiobookTransport.visible) {
+            ReaderAudiobookTransportBar(
+                transport = audiobookTransport,
+                colors = readerChromeColors(effectiveSettings, systemDarkTheme),
+                backgroundColor = Color(effectiveSettings.backgroundColor(systemDarkTheme)),
+                playing = sasayakiPlayer?.isPlaying == true,
+                canReplayLine = activeSasayakiCue != null,
+                onReplayLine = ::replayActiveSasayakiCue,
+                onPreviousLine = { seekAudiobookLine(forward = false) },
+                onTogglePlayback = {
+                    resumeAudiobookFollow()
+                    handleSasayakiTogglePlayback()
+                },
+                onNextLine = { seekAudiobookLine(forward = true) },
+                onChapters = {
+                    closeLookupPopupsAndSelection()
+                    stateHolder.openGoToFromMenu()
+                },
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
+        }
         if (chromeVisibility.showBottomChrome) ReaderBottomChrome(
             state = chromeState,
             settings = effectiveSettings,

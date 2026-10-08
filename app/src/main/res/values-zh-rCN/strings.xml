@@ -45,6 +45,20 @@
     <string name="import_select_ttu_bookdata_backup">请选择 .zip ッツ bookdata 备份文件。</string>
     <string name="import_select_font">请选择 .ttf、.otf、.woff 或 .woff2 字体文件。</string>
     <string name="main_tab_books" comment="Main navigation tab label, intentionally matching the backup Books section.">书库</string>
+    <string name="main_tab_audiobooks">有声书</string>
+    <string name="audiobooks_search_placeholder">搜索书籍、章节或编号</string>
+    <string name="audiobooks_search_clear">清除搜索</string>
+    <string name="audiobooks_empty_title">还没有有声书</string>
+    <string name="audiobooks_empty_body">添加了 Sasayaki 音频的书籍会显示在这里。先在书库中打开书籍，再从 Sasayaki 菜单添加音频和字幕。</string>
+    <string name="audiobooks_no_results_body">试试章节标题、语法点或它的编号。</string>
+    <string name="audiobooks_result_in_text" comment="Search result subtitle: book title, then a note that the match is in the spoken text rather than a title.">%1$s · 正文匹配</string>
+    <string name="audiobooks_expand_book">显示章节</string>
+    <string name="audiobooks_collapse_book">隐藏章节</string>
+    <string name="audiobooks_resume_book">继续收听</string>
+    <plurals name="audiobooks_chapter_count">
+        <item quantity="one">%1$d 章</item>
+        <item quantity="other">%1$d 章</item>
+    </plurals>
     <string name="main_tab_dictionary">查词</string>
     <string name="main_tab_statistics" comment="Main navigation tab label, intentionally matching statistics page titles.">统计</string>
     <string name="main_tab_settings" comment="Main navigation tab label, intentionally matching settings page titles.">设置</string>
@@ -398,6 +412,7 @@
     <string name="reader_appearance_paginated">分页</string>
     <string name="reader_appearance_continuous">连续</string>
     <string name="reader_appearance_visual_novel">VN</string>
+    <string name="reader_appearance_audiobook" comment="Short reader layout mode label for the line-by-line audiobook view.">有声</string>
     <string name="reader_visual_novel_reveal_speed">文字显示速度</string>
     <string name="reader_visual_novel_reveal_speed_instant">立即</string>
     <string name="reader_visual_novel_screen_mode">屏幕内容</string>
@@ -669,6 +684,9 @@
     <string name="sasayaki_fast_forward">有声书快进</string>
     <string name="sasayaki_replay_current_screen">重播当前屏幕</string>
     <string name="sasayaki_next_screen">下一屏</string>
+    <string name="audiobook_replay_line">重播当前句</string>
+    <string name="audiobook_previous_line">上一句</string>
+    <string name="audiobook_next_line">下一句</string>
     <string name="sasayaki_replay_cue">重播有声书句子</string>
     <string name="sasayaki_play_from_cue">从有声书句子播放</string>
     <string name="sasayaki_import_audiobook_failed">无法导入有声书。</string>

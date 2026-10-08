@@ -55,6 +55,12 @@ internal object ReaderPaginationScripts {
     fun clearSasayakiCueInvocation(): String =
         "window.hoshiReader.clearSasayakiCue()"
 
+    fun resumeAudiobookFollowInvocation(): String =
+        "if (window.hoshiReader && typeof window.hoshiReader.resumeAudiobookFollow === 'function') { window.hoshiReader.resumeAudiobookFollow(); }"
+
+    fun audiobookBottomInsetInvocation(insetCssPx: Int): String =
+        "if (window.hoshiReader && typeof window.hoshiReader.setAudiobookBottomInset === 'function') { window.hoshiReader.setAudiobookBottomInset(${insetCssPx.coerceAtLeast(0)}); }"
+
     fun didScroll(result: String?): Boolean =
         navigationResult(result) == ReaderNavigationResult.Advanced
 
@@ -105,9 +111,12 @@ internal object ReaderPaginationScripts {
         val source = ReaderPaginationAssetSource.load(assets)
         val template = when (settings.viewMode) {
             ReaderViewMode.Paginated -> source.paginated
-            ReaderViewMode.Continuous -> source.continuous
+            ReaderViewMode.Continuous,
+            ReaderViewMode.Audiobook,
+            -> source.continuous
             ReaderViewMode.VisualNovel -> source.visualNovel
         }
+        val audiobookScript = if (settings.viewMode == ReaderViewMode.Audiobook) source.readerAudiobook else ""
         val restoreScripts = if (settings.viewMode == ReaderViewMode.VisualNovel) {
             ""
         } else {
@@ -120,6 +129,8 @@ internal object ReaderPaginationScripts {
         val body = template
             .replace("__HOSHI_HIGHLIGHTS_SCRIPT__", source.highlights)
             .replace("__HOSHI_READER_SASAYAKI_SCRIPT__", source.readerSasayaki)
+            .replace("__HOSHI_READER_AUDIOBOOK_SCRIPT__", audiobookScript)
+            .replace("__HOSHI_AUDIOBOOK_BOTTOM_INSET__", readerAudiobookDefaultContentOverlapDp().toString())
             .replace("__HOSHI_READER_TEXT_SEMANTICS_SCRIPT__", source.readerTextSemantics)
             .replace("__HOSHI_READER_DOM_TEXT_SCRIPT__", source.readerDomText)
             .replace("__HOSHI_READER_MEDIA_SEMANTICS_SCRIPT__", source.readerMediaSemantics)
@@ -164,6 +175,7 @@ private data class ReaderPaginationAssetSource(
     val continuous: String,
     val visualNovel: String,
     val readerSasayaki: String,
+    val readerAudiobook: String,
     val readerTextSemantics: String,
     val readerDomText: String,
     val readerMediaSemantics: String,
@@ -180,6 +192,7 @@ private data class ReaderPaginationAssetSource(
                     continuous = assets.readerContinuousJs,
                     visualNovel = assets.readerVisualNovelJs,
                     readerSasayaki = assets.readerSasayakiJs,
+                    readerAudiobook = assets.readerAudiobookJs,
                     readerTextSemantics = assets.readerTextSemanticsJs,
                     readerDomText = assets.readerDomTextJs,
                     readerMediaSemantics = assets.readerMediaSemanticsJs,
@@ -201,6 +214,7 @@ private object SourceTreeReaderPaginationAssets {
             continuous = readSourceAsset("hoshi-web/reader/reader-continuous.js"),
             visualNovel = readSourceAsset("hoshi-web/reader/reader-visual-novel.js"),
             readerSasayaki = readSourceAsset("hoshi-web/reader/reader-sasayaki.js"),
+            readerAudiobook = readSourceAsset("hoshi-web/reader/reader-audiobook.js"),
             readerTextSemantics = readSourceAsset("hoshi-web/reader/reader-text-semantics.js"),
             readerDomText = readSourceAsset("hoshi-web/reader/reader-dom-text.js"),
             readerMediaSemantics = readSourceAsset("hoshi-web/reader/reader-media-semantics.js"),

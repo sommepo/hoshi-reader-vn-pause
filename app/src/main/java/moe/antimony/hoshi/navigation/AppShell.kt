@@ -35,6 +35,8 @@ import moe.antimony.hoshi.epub.BookSortOption
 import moe.antimony.hoshi.features.anki.AnkiView
 import moe.antimony.hoshi.features.anki.AnkiAdvancedView
 import moe.antimony.hoshi.features.anki.AnkiCardFormatView
+import moe.antimony.hoshi.features.audiobooks.AudiobookOpenRequest
+import moe.antimony.hoshi.features.audiobooks.AudiobooksView
 import moe.antimony.hoshi.features.bookshelf.BookshelfView
 import moe.antimony.hoshi.features.bookshelf.MainTab
 import moe.antimony.hoshi.features.bookshelf.SettingsDestination
@@ -82,6 +84,7 @@ fun AppShell(
     val pendingImportRouteCoordinator = remember { PendingImportRouteCoordinator() }
     var selectedTab by rememberSaveable { mutableStateOf(MainTab.Books) }
     val booksBackStack = rememberNavBackStack(AppRoute.BooksRoute)
+    val audiobooksBackStack = rememberNavBackStack(AppRoute.AudiobooksRoute)
     val dictionaryBackStack = rememberNavBackStack(AppRoute.DictionaryRoute)
     val statisticsBackStack = rememberNavBackStack(AppRoute.StatisticsRoute)
     val settingsBackStack = rememberNavBackStack(AppRoute.SettingsRoute)
@@ -131,6 +134,7 @@ fun AppShell(
 
     fun selectedBackStack(): MutableList<NavKey> = when (effectiveSelectedTab) {
         MainTab.Books -> booksBackStack
+        MainTab.Audiobooks -> audiobooksBackStack
         MainTab.Dictionary -> dictionaryBackStack
         MainTab.Statistics -> statisticsBackStack
         MainTab.Settings -> settingsBackStack
@@ -162,6 +166,7 @@ fun AppShell(
 
     fun clearReaderRoutesOutsideBooks() {
         statisticsBackStack.removeReaderRoutes(onReaderRouteRemoved = ::clearLoadedReaderProfile)
+        audiobooksBackStack.removeReaderRoutes(onReaderRouteRemoved = ::clearLoadedReaderProfile)
     }
 
     LaunchedEffect(visibleMainTabs) {
@@ -237,7 +242,26 @@ fun AppShell(
         booksBackStack.openReaderRoute(bookId)
     }
 
+    fun openAudiobook(request: AudiobookOpenRequest) {
+        // Only one reader owns the Sasayaki playback session, so the Books stack gives its reader up.
+        statisticsBackStack.removeReaderRoutes(onReaderRouteRemoved = ::clearLoadedReaderProfile)
+        booksBackStack.removeReaderRoutes(onReaderRouteRemoved = ::clearLoadedReaderProfile)
+        selectedTab = MainTab.Audiobooks
+        audiobooksBackStack.openAudiobookReaderRoute(
+            AppRoute.ReaderRoute(
+                bookId = request.bookId,
+                startCharacter = request.startCharacter,
+                audiobook = true,
+                autoplay = true,
+            ),
+        )
+    }
+
     fun returnToSasayakiReader(bookId: String) {
+        if (audiobooksBackStack.isShowingReaderFor(bookId)) {
+            selectedTab = MainTab.Audiobooks
+            return
+        }
         clearReaderRoutesOutsideBooks()
         selectedTab = MainTab.Books
         booksBackStack.returnFromMediaSession(
@@ -278,6 +302,18 @@ fun AppShell(
                     readerSettings = currentReaderSettings,
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
+                    onOpenAudiobook = ::openAudiobook,
+                    bookshelfRefreshKey = bookshelfRefreshKey,
+                    dictionaryFocusRequestKey = dictionaryFocusRequestKey,
+                )
+                AppRoute.AudiobooksRoute -> TopLevelRouteContent(
+                    selectedTab = MainTab.Audiobooks,
+                    pendingImportUri = currentPendingImportUri,
+                    onPendingImportConsumed = currentOnPendingImportConsumed,
+                    readerSettings = currentReaderSettings,
+                    onReaderSettingsChange = currentOnReaderSettingsChange,
+                    onOpenReader = ::openReader,
+                    onOpenAudiobook = ::openAudiobook,
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -288,6 +324,7 @@ fun AppShell(
                     readerSettings = currentReaderSettings,
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
+                    onOpenAudiobook = ::openAudiobook,
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -298,6 +335,7 @@ fun AppShell(
                     readerSettings = currentReaderSettings,
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
+                    onOpenAudiobook = ::openAudiobook,
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -308,6 +346,7 @@ fun AppShell(
                     readerSettings = currentReaderSettings,
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
+                    onOpenAudiobook = ::openAudiobook,
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                     onSettingsDestination = { destination ->
@@ -349,6 +388,9 @@ fun AppShell(
                 is AppRoute.ReaderRoute -> {
                     ReaderRouteDestination(
                         bookId = route.bookId,
+                        startCharacter = route.startCharacter,
+                        audiobookSession = route.audiobook,
+                        autoplay = route.autoplay,
                         stateHolder = readerRouteStateHolder,
                         readerSettings = currentReaderSettings,
                         onReaderSettingsChange = currentOnReaderSettingsChange,
@@ -365,6 +407,7 @@ fun AppShell(
                     readerSettings = currentReaderSettings,
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
+                    onOpenAudiobook = ::openAudiobook,
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -378,6 +421,11 @@ fun AppShell(
     )
     val booksEntries = rememberDecoratedNavEntries(
         backStack = booksBackStack,
+        entryDecorators = rememberAppNavEntryDecorators(),
+        entryProvider = entryProvider,
+    )
+    val audiobooksEntries = rememberDecoratedNavEntries(
+        backStack = audiobooksBackStack,
         entryDecorators = rememberAppNavEntryDecorators(),
         entryProvider = entryProvider,
     )
@@ -398,6 +446,7 @@ fun AppShell(
     )
     val currentEntries = when (effectiveSelectedTab) {
         MainTab.Books -> booksEntries
+        MainTab.Audiobooks -> audiobooksEntries
         MainTab.Dictionary -> dictionaryEntries
         MainTab.Statistics -> statisticsEntries
         MainTab.Settings -> settingsEntries
@@ -442,6 +491,7 @@ private fun TopLevelRouteContent(
     readerSettings: ReaderSettings,
     onReaderSettingsChange: (ReaderSettings) -> Unit,
     onOpenReader: (String) -> Unit,
+    onOpenAudiobook: (AudiobookOpenRequest) -> Unit,
     bookshelfRefreshKey: Int,
     dictionaryFocusRequestKey: Int,
     onSettingsDestination: (SettingsDestination) -> Unit = {},
@@ -454,6 +504,11 @@ private fun TopLevelRouteContent(
             onOpenReader = onOpenReader,
             refreshKey = bookshelfRefreshKey,
             layoutSpec = layoutSpec,
+            modifier = Modifier.fillMaxSize(),
+        )
+        MainTab.Audiobooks -> AudiobooksView(
+            layoutSpec = layoutSpec,
+            onOpen = onOpenAudiobook,
             modifier = Modifier.fillMaxSize(),
         )
         MainTab.Dictionary -> DictionarySearchView(
@@ -537,6 +592,7 @@ private fun SettingsDetailDestination(
 
 private fun MainTab.toRoute(): AppRoute = when (this) {
     MainTab.Books -> AppRoute.BooksRoute
+    MainTab.Audiobooks -> AppRoute.AudiobooksRoute
     MainTab.Dictionary -> AppRoute.DictionaryRoute
     MainTab.Statistics -> AppRoute.StatisticsRoute
     MainTab.Settings -> AppRoute.SettingsRoute
@@ -580,6 +636,7 @@ internal fun normalizeStatisticsBackStackForVisibleTabs(
 
 private fun AppRoute.toMainTab(): MainTab = when (this) {
     AppRoute.MainRoute, AppRoute.BooksRoute -> MainTab.Books
+    AppRoute.AudiobooksRoute -> MainTab.Audiobooks
     AppRoute.DictionaryRoute -> MainTab.Dictionary
     AppRoute.StatisticsRoute -> MainTab.Statistics
     AppRoute.SettingsRoute -> MainTab.Settings

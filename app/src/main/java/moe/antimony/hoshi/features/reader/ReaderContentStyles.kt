@@ -183,7 +183,30 @@ internal object ReaderContentStyles {
         }
         val generatedLayout = ReaderGeneratedLayout.from(settings)
         val layoutCss = when (settings.viewMode) {
-            ReaderViewMode.Continuous -> {
+            ReaderViewMode.Continuous,
+            ReaderViewMode.Audiobook,
+            -> {
+                val audiobookCss = if (settings.viewMode == ReaderViewMode.Audiobook) {
+                    """
+                    body {
+                        padding-top: 45vh !important;
+                        padding-bottom: 60vh !important;
+                    }
+                    html:not([data-hoshi-reader-eink-mode="true"]) body {
+                        color: color-mix(in srgb, var(--hoshi-text-color) 36%, transparent) !important;
+                    }
+                    p {
+                        margin-top: 0.75em;
+                        margin-bottom: 0.75em;
+                    }
+                    .hoshi-sasayaki-cue {
+                        border-radius: 0.2em;
+                        transition: color 240ms ease, background-color 240ms ease;
+                    }
+                    """.trimIndent()
+                } else {
+                    ""
+                }
                 val hiddenOverflowAxis = if (settings.verticalWriting) "overflow-y" else "overflow-x"
                 val viewportConstraintCss = if (settings.verticalWriting) {
                     "height: var(--hoshi-continuous-height, 100vh) !important;"
@@ -214,6 +237,7 @@ internal object ReaderContentStyles {
                     $gridCss
                     text-orientation: mixed;
                 }
+                $audiobookCss
                 """.trimIndent()
             }
             ReaderViewMode.VisualNovel -> {

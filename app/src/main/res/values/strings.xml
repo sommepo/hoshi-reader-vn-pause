@@ -45,6 +45,20 @@
     <string name="import_select_ttu_bookdata_backup">Select a .zip ッツ bookdata backup file.</string>
     <string name="import_select_font">Select a .ttf, .otf, .woff, or .woff2 font file.</string>
     <string name="main_tab_books" comment="Main navigation tab label, intentionally matching the backup Books section.">Books</string>
+    <string name="main_tab_audiobooks">Audiobooks</string>
+    <string name="audiobooks_search_placeholder">Search books, chapters or IDs</string>
+    <string name="audiobooks_search_clear">Clear search</string>
+    <string name="audiobooks_empty_title">No audiobooks yet</string>
+    <string name="audiobooks_empty_body">Books show up here once they have Sasayaki audio. Open a book from Books, then add its audio and subtitles from the Sasayaki menu.</string>
+    <string name="audiobooks_no_results_body">Try a chapter title, a grammar point or its ID number.</string>
+    <string name="audiobooks_result_in_text" comment="Search result subtitle: book title, then a note that the match is in the spoken text rather than a title.">%1$s · in the text</string>
+    <string name="audiobooks_expand_book">Show chapters</string>
+    <string name="audiobooks_collapse_book">Hide chapters</string>
+    <string name="audiobooks_resume_book">Continue listening</string>
+    <plurals name="audiobooks_chapter_count">
+        <item quantity="one">%1$d chapter</item>
+        <item quantity="other">%1$d chapters</item>
+    </plurals>
     <string name="main_tab_dictionary">Dictionary</string>
     <string name="main_tab_statistics" comment="Main navigation tab label, intentionally matching statistics page titles.">Statistics</string>
     <string name="main_tab_settings" comment="Main navigation tab label, intentionally matching settings page titles.">Settings</string>
@@ -400,6 +414,7 @@
     <string name="reader_appearance_paginated">Paginated</string>
     <string name="reader_appearance_continuous">Continuous</string>
     <string name="reader_appearance_visual_novel">VN</string>
+    <string name="reader_appearance_audiobook" comment="Short reader layout mode label for the line-by-line audiobook view.">Listen</string>
     <string name="reader_visual_novel_reveal_speed">Text Reveal Speed</string>
     <string name="reader_visual_novel_reveal_speed_instant">Instant</string>
     <string name="reader_visual_novel_screen_mode">Screen Content</string>
@@ -671,6 +686,9 @@
     <string name="sasayaki_fast_forward">Sasayaki Fast-forward</string>
     <string name="sasayaki_replay_current_screen">Replay current screen</string>
     <string name="sasayaki_next_screen">Next screen</string>
+    <string name="audiobook_replay_line">Replay line</string>
+    <string name="audiobook_previous_line">Previous line</string>
+    <string name="audiobook_next_line">Next line</string>
     <string name="sasayaki_replay_cue">Replay Sasayaki Cue</string>
     <string name="sasayaki_play_from_cue">Play From Sasayaki Cue</string>
     <string name="sasayaki_import_audiobook_failed">Unable to import audiobook.</string>

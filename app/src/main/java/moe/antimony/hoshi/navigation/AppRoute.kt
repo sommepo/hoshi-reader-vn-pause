@@ -12,6 +12,9 @@ sealed interface AppRoute : NavKey {
     data object BooksRoute : AppRoute
 
     @Serializable
+    data object AudiobooksRoute : AppRoute
+
+    @Serializable
     data object DictionaryRoute : AppRoute
 
     @Serializable
@@ -36,6 +39,11 @@ sealed interface AppRoute : NavKey {
     @Serializable
     data class ReaderRoute(
         val bookId: String,
+        /** Whole-book character offset to open at instead of the saved bookmark. */
+        val startCharacter: Int? = null,
+        /** Opens in Audiobook mode without changing the saved view mode. */
+        val audiobook: Boolean = false,
+        val autoplay: Boolean = false,
     ) : AppRoute
 }
 

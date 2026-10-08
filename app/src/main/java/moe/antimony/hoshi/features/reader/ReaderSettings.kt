@@ -137,7 +137,18 @@ data class ReaderSettings(
     val openLastReadBookOnLaunch: Boolean = false,
 ) {
     val continuousMode: Boolean
-        get() = viewMode == ReaderViewMode.Continuous
+        get() = viewMode.usesContinuousScroll
+
+    /**
+     * Settings the reader content is laid out with. Audiobook mode is a horizontal line column
+     * regardless of the persisted writing direction, which stays untouched for the other modes.
+     */
+    val layoutSettings: ReaderSettings
+        get() = if (viewMode == ReaderViewMode.Audiobook && verticalWriting) {
+            copy(verticalWriting = false)
+        } else {
+            this
+        }
 
     val bottomOverlapPx: Int
         get() = if (verticalWriting) fontSize else 0
@@ -268,7 +279,11 @@ enum class ReaderInterfaceTheme(val label: String) {
 enum class ReaderViewMode(val rawValue: String) {
     Paginated("paginated"),
     Continuous("continuous"),
-    VisualNovel("visualNovel");
+    VisualNovel("visualNovel"),
+    Audiobook("audiobook");
+
+    val usesContinuousScroll: Boolean
+        get() = this == Continuous || this == Audiobook
 
     companion object {
         fun fromStorage(value: String?, legacyContinuousMode: Boolean = false): ReaderViewMode =
