@@ -53,6 +53,7 @@ internal class SasayakiCompanionImporter internal constructor(
         book: EpubBook,
         subtitleUri: Uri?,
         audioUri: Uri?,
+        alwaysCopyAudio: Boolean = false,
     ) = withContext(ioDispatcher) {
         sidecars.attachSasayakiCompanions(
             bookRoot = bookRoot,
@@ -60,7 +61,7 @@ internal class SasayakiCompanionImporter internal constructor(
             readSubtitle = subtitleUri?.let { uri -> { readSubtitle(uri) } },
             audioUri = audioUri?.toString(),
             copyAudio = {
-                if (audioUri != null && copyAudioToPrivateStorage()) copyAudio(bookRoot, audioUri) else null
+                if (audioUri != null && (alwaysCopyAudio || copyAudioToPrivateStorage())) copyAudio(bookRoot, audioUri) else null
             },
         )
     }

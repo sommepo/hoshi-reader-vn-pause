@@ -1252,6 +1252,7 @@ class BookshelfViewModelTest {
             bookUri: android.net.Uri,
             subtitleUri: android.net.Uri?,
             audioUri: android.net.Uri?,
+            alwaysCopyAudio: Boolean,
         ): String = importBookId
 
         override suspend fun exportBook(entry: BookEntry, uri: android.net.Uri) {

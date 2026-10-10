@@ -25,7 +25,9 @@ Historical release notes before v1.3.0 live in [CHANGELOG_ARCHIVE.md](CHANGELOG_
   chapter opens it in Audiobook mode and starts playing from its first line.
   A Today section at the top can follow a study list link: it lists the
   chapters whose ID numbers were studied that day, in study order, and names
-  the IDs that have no audiobook chapter yet.
+  the IDs that have no audiobook chapter yet. With an audiobook library link,
+  the tab also shows how many books on the server are not on the device and
+  downloads them with their subtitles and audio already set up.
 - Import folder now sets up Sasayaki on its own: an `.srt` subtitle and an MP3,
   M4B, or Opus audiobook stored beside an EPUB with the same file name or the
   same leading ID number are matched and attached while the book is imported.

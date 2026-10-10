@@ -86,4 +86,24 @@ class StudyListTest {
         )
         assertEquals(emptyList<String>(), today.missingIds)
     }
+
+    @Test
+    fun aChapterCoveringSeveralPointsIsFoundByEachIdAndListedOnce() {
+        val book = AudiobookLibraryBook(
+            id = "n2",
+            title = "文法会話 N2 第1巻（19–43）",
+            chapters = listOf(
+                AudiobookLibraryChapter(label = "321・336 あり得ない", startCharacter = 0),
+                AudiobookLibraryChapter(label = "397 認めざるを得ない", startCharacter = 90),
+            ),
+        )
+
+        assertEquals(
+            listOf("321・336 あり得ない"),
+            studyListChapters(listOf(book), listOf("336")).chapters.map { it.chapter.label },
+        )
+        val both = studyListChapters(listOf(book), listOf("336", "397", "321"))
+        assertEquals(listOf("321・336 あり得ない", "397 認めざるを得ない"), both.chapters.map { it.chapter.label })
+        assertEquals(emptyList<String>(), both.missingIds)
+    }
 }

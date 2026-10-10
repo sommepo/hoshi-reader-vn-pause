@@ -99,6 +99,7 @@ class AudiobooksViewModelTest {
                 override suspend fun loadLibrary(): List<AudiobookLibraryBook> = error("unreadable")
             },
             studyList = FakeStudyList(),
+            dialogueLibrary = FakeDialogueLibrary(),
             searchDispatcher = Dispatchers.Unconfined,
             coroutineScope = scope,
         )
@@ -155,6 +156,59 @@ class AudiobooksViewModelTest {
         assertEquals(AudiobooksTodayState.Failed, viewModel.uiState.value.today)
     }
 
+    @Test
+    fun countsNewLibraryBooksAndDownloadsThemOnRequest() {
+        val library = FakeDialogueLibrary(url = "https://books.example/index.json", newBooks = 2)
+        val viewModel = viewModel(listOf(n3), dialogueLibrary = library)
+        viewModel.reload()
+        assertEquals(DialogueLibraryState.Idle(newBooks = 2), viewModel.uiState.value.dialogueLibrary)
+
+        viewModel.onDownloadDialogues()
+
+        assertEquals(listOf(1 to 2, 2 to 2), library.progress)
+        assertEquals(DialogueLibraryState.Idle(newBooks = 0), viewModel.uiState.value.dialogueLibrary)
+    }
+
+    @Test
+    fun reportsAnUnreachableLibraryAndDoesNothingWithoutALink() {
+        val unreachable = FakeDialogueLibrary(url = "https://books.example/index.json", newBooks = null)
+        val failing = viewModel(listOf(n3), dialogueLibrary = unreachable)
+        failing.reload()
+        assertEquals(DialogueLibraryState.Failed, failing.uiState.value.dialogueLibrary)
+
+        val unset = FakeDialogueLibrary(newBooks = 5)
+        val idle = viewModel(listOf(n3), dialogueLibrary = unset)
+        idle.reload()
+        idle.onDownloadDialogues()
+        assertEquals(DialogueLibraryState.Idle(newBooks = 0), idle.uiState.value.dialogueLibrary)
+        assertEquals(emptyList<Pair<Int, Int>>(), unset.progress)
+    }
+
+    private class FakeDialogueLibrary(
+        url: String = "",
+        var newBooks: Int? = 0,
+    ) : DialogueLibrarySource {
+        private val urlState = MutableStateFlow(url)
+        val progress = mutableListOf<Pair<Int, Int>>()
+        override val url: Flow<String> = urlState
+
+        override suspend fun setUrl(url: String) {
+            urlState.value = url
+        }
+
+        override suspend fun countNew(url: String): Int = newBooks ?: error("offline")
+
+        override suspend fun downloadNew(url: String, onProgress: (Int, Int) -> Unit): Int {
+            val total = newBooks ?: error("offline")
+            repeat(total) {
+                progress += (it + 1) to total
+                onProgress(it + 1, total)
+            }
+            newBooks = 0
+            return total
+        }
+    }
+
     private class FakeStudyList(
         url: String = "",
         var ids: List<String>? = emptyList(),
@@ -172,12 +226,14 @@ class AudiobooksViewModelTest {
     private fun viewModel(
         books: List<AudiobookLibraryBook>,
         studyList: StudyListSource = FakeStudyList(),
+        dialogueLibrary: DialogueLibrarySource = FakeDialogueLibrary(),
     ) =
         AudiobooksViewModel(
             library = object : AudiobookLibrarySource {
                 override suspend fun loadLibrary(): List<AudiobookLibraryBook> = books
             },
             studyList = studyList,
+            dialogueLibrary = dialogueLibrary,
             searchDispatcher = Dispatchers.Unconfined,
             coroutineScope = scope,
         )

@@ -213,6 +213,16 @@ refactor goals belong in `docs/ARCHITECTURE_REFACTORING.md`.
   `studyListChapters` matches those IDs against the leading number of chapter
   titles, or of the book title for a single-dialogue book. The list is fetched
   again each time the tab resumes; a failed fetch keeps the last list.
+- `DialogueLibraryRepository` reads a second user-entered link: a JSON index
+  (`files` with `name`, `size`, `modified`) of a server folder. It pairs the
+  listed files with `planBookImportBundles`, downloads each new book's files to
+  the cache directory, and imports them through
+  `BookshelfRepository.importBookBundle` with the audio always copied into the
+  book. `dialogue-library-imported.json` in the files directory maps each
+  downloaded book's file signature to its book ID, so a book is offered again
+  only when a server file changes or the book was deleted. The download runs in
+  the Audiobooks ViewModel scope and resumes book by book; it is not a
+  WorkManager job.
 - Folder import walks the SAF tree once for EPUB, `.srt`, and audiobook files.
   `planBookImportBundles` pairs each EPUB with the companions beside it by file
   name, name extension, leading ID number, or sole-candidate rule, and

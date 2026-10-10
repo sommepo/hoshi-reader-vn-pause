@@ -59,7 +59,13 @@ internal interface BookshelfRepository {
     suspend fun openBook(entry: BookEntry): String
     suspend fun importBook(uri: Uri): String
     /** Imports the EPUB and attaches the subtitle and audiobook found next to it, when given. */
-    suspend fun importBookBundle(bookUri: Uri, subtitleUri: Uri?, audioUri: Uri?): String
+    suspend fun importBookBundle(
+        bookUri: Uri,
+        subtitleUri: Uri?,
+        audioUri: Uri?,
+        /** Copies the audiobook into the book even when the user links audio in place. */
+        alwaysCopyAudio: Boolean = false,
+    ): String
     suspend fun exportBook(entry: BookEntry, uri: Uri)
     suspend fun importRemoteBook(
         entry: RemoteBookEntry,
@@ -161,6 +167,7 @@ internal class AndroidBookshelfRepository @Inject constructor(
         bookUri: Uri,
         subtitleUri: Uri?,
         audioUri: Uri?,
+        alwaysCopyAudio: Boolean,
     ): String = withContext(ioDispatcher) {
         val root = bookRepository.importBook(contentResolver, bookUri)
         val parsedBook = bookParser.parse(root)
@@ -168,7 +175,7 @@ internal class AndroidBookshelfRepository @Inject constructor(
         saveBookInfo(root, parsedBook)
         prewarmBookCover(root)
         if (subtitleUri != null || audioUri != null) {
-            sasayakiCompanionImporter.attach(root, parsedBook, subtitleUri, audioUri)
+            sasayakiCompanionImporter.attach(root, parsedBook, subtitleUri, audioUri, alwaysCopyAudio)
         }
         readerBookId(root)
     }

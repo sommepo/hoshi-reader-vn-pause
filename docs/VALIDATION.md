@@ -335,6 +335,10 @@ Validate relevant sync/update/Sasayaki changes with:
   note; after saving a link it lists the chapters for that day's IDs in study
   order, names IDs that have no chapter, refreshes when the tab is reopened,
   and keeps the last list when the server cannot be reached.
+- Audiobooks tab library download: with a library link the tab shows the count
+  of new books, Download imports each with subtitle match and audio attached
+  and playable offline, a second check reports nothing new, and a book deleted
+  from Books is offered again.
 - Sasayaki linked and copied Ogg Opus playback with `testdata/opus_test.opus`.
   Confirm its title and artist metadata, all 22 `CHAPTERnnn` chapter entries,
   current-chapter centering without first flashing the default list position

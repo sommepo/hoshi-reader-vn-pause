@@ -64,6 +64,18 @@
     <string name="audiobooks_study_list_title">Study list link</string>
     <string name="audiobooks_study_list_body" comment="Placeholder is the literal token the user types where the date belongs, for example {date}.">Link to a JSON list of the ID numbers studied today. Chapters whose titles start with those numbers are shown under Today. Write %1$s where today\'s date (YYYY-MM-DD) belongs.</string>
     <string name="audiobooks_study_list_placeholder" translatable="false">https://example.com/today?date={date}</string>
+    <string name="audiobooks_links_title">Study list and library links</string>
+    <string name="audiobooks_library_title">Audiobook library link</string>
+    <string name="audiobooks_library_body">Link to the index of a server folder of audiobooks. Books that are not on this device can then be downloaded here with their subtitles and audio.</string>
+    <string name="audiobooks_library_placeholder" translatable="false">https://example.com/books/index.json</string>
+    <plurals name="audiobooks_library_new">
+        <item quantity="one">%1$d new book in the library</item>
+        <item quantity="other">%1$d new books in the library</item>
+    </plurals>
+    <string name="audiobooks_library_retry">Try again</string>
+    <string name="audiobooks_library_checking">Checking the library…</string>
+    <string name="audiobooks_library_downloading" comment="Placeholders are the book being downloaded and the total number of books.">Downloading book %1$d of %2$d…</string>
+    <string name="audiobooks_library_failed">Couldn\'t reach the audiobook library.</string>
     <plurals name="audiobooks_chapter_count">
         <item quantity="one">%1$d chapter</item>
         <item quantity="other">%1$d chapters</item>

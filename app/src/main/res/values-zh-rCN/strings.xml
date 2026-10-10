@@ -63,6 +63,17 @@
     <string name="audiobooks_today_missing" comment="Placeholder is a comma-separated list of ID numbers.">以下编号没有对应的有声书章节：%1$s</string>
     <string name="audiobooks_study_list_title">学习列表链接</string>
     <string name="audiobooks_study_list_body" comment="Placeholder is the literal token the user types where the date belongs, for example {date}.">指向今天所学编号的 JSON 列表的链接。标题以这些编号开头的章节会显示在“今天”下。在需要填入今天日期（YYYY-MM-DD）的位置写 %1$s。</string>
+    <string name="audiobooks_links_title">学习列表和书库链接</string>
+    <string name="audiobooks_library_title">有声书库链接</string>
+    <string name="audiobooks_library_body">指向服务器上有声书文件夹索引的链接。设备上没有的书可以在这里连同字幕和音频一起下载。</string>
+    <plurals name="audiobooks_library_new">
+        <item quantity="one">书库中有 %1$d 本新书</item>
+        <item quantity="other">书库中有 %1$d 本新书</item>
+    </plurals>
+    <string name="audiobooks_library_retry">重试</string>
+    <string name="audiobooks_library_checking">正在检查书库…</string>
+    <string name="audiobooks_library_downloading" comment="Placeholders are the book being downloaded and the total number of books.">正在下载第 %1$d 本，共 %2$d 本…</string>
+    <string name="audiobooks_library_failed">无法连接有声书库。</string>
     <plurals name="audiobooks_chapter_count">
         <item quantity="one">%1$d 章</item>
         <item quantity="other">%1$d 章</item>

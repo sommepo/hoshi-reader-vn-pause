@@ -122,11 +122,20 @@ private fun fetchStudyList(url: String): String {
     }
 }
 
-private val LeadingChapterId = Regex("^\\D{0,3}(\\d+)")
+private val LeadingChapterIds = Regex("^\\D{0,3}(\\d+(?:[・･,、/+&]\\d+)*)")
+private val ChapterIdSeparators = Regex("[・･,、/+&]")
 
-/** The number a chapter or book title starts with, compared by value so "042" and "42" are the same ID. */
-internal fun studyListChapterId(label: String): String? =
-    LeadingChapterId.find(audiobookSearchNormalize(label).trim())?.groupValues?.get(1)?.trimStart('0')
+/**
+ * The numbers a chapter or book title starts with, compared by value so "042" and "42" are the
+ * same ID. A title covering several points lists them joined, like "321・336 あり得ない".
+ */
+internal fun studyListChapterIds(label: String): List<String> =
+    LeadingChapterIds.find(audiobookSearchNormalize(label).trim())
+        ?.groupValues
+        ?.get(1)
+        ?.split(ChapterIdSeparators)
+        ?.map { it.trimStart('0') }
+        .orEmpty()
 
 data class StudyListChapters(
     /** Chapters for today's IDs, in study order. */
@@ -143,23 +152,27 @@ internal fun studyListChapters(
         for (book in books) {
             val chapterIds = mutableSetOf<String>()
             for (chapter in book.chapters) {
-                val id = studyListChapterId(chapter.label) ?: continue
-                chapterIds += id
-                getOrPut(id) { mutableListOf() } += AudiobookSearchResult(
+                val result = AudiobookSearchResult(
                     bookId = book.id,
                     bookTitle = book.title,
                     chapter = chapter,
                     matchedInText = false,
                 )
+                for (id in studyListChapterIds(chapter.label)) {
+                    chapterIds += id
+                    getOrPut(id) { mutableListOf() } += result
+                }
             }
             // A book that is one dialogue carries the ID in its own title; it opens from the start.
-            val bookId = studyListChapterId(book.title)?.takeIf { it !in chapterIds } ?: continue
-            getOrPut(bookId) { mutableListOf() } += AudiobookSearchResult(
+            val result = AudiobookSearchResult(
                 bookId = book.id,
                 bookTitle = book.title,
                 chapter = AudiobookLibraryChapter(label = book.title, startCharacter = 0),
                 matchedInText = false,
             )
+            for (id in studyListChapterIds(book.title)) {
+                if (id !in chapterIds) getOrPut(id) { mutableListOf() } += result
+            }
         }
     }
     val chapters = mutableListOf<AudiobookSearchResult>()
@@ -168,5 +181,6 @@ internal fun studyListChapters(
         val found = chaptersById[id.trim().trimStart('0')]
         if (found == null) missing += id else chapters += found
     }
-    return StudyListChapters(chapters = chapters, missingIds = missing)
+    // One dialogue covering two of today's points is listed once.
+    return StudyListChapters(chapters = chapters.distinct(), missingIds = missing)
 }

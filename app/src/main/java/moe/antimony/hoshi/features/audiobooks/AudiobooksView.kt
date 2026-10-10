@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.rememberTextFieldState
@@ -36,7 +37,9 @@ import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -96,6 +99,8 @@ internal fun AudiobooksView(
         onQueryChange = viewModel::onQueryChange,
         onToggleBook = viewModel::onToggleBook,
         onStudyListUrlChange = viewModel::onStudyListUrlChange,
+        onDialogueLibraryUrlChange = viewModel::onDialogueLibraryUrlChange,
+        onDownloadDialogues = viewModel::onDownloadDialogues,
         onOpen = onOpen,
         modifier = modifier,
     )
@@ -108,6 +113,8 @@ internal fun AudiobooksContent(
     onQueryChange: (String) -> Unit,
     onToggleBook: (String) -> Unit,
     onStudyListUrlChange: (String) -> Unit,
+    onDialogueLibraryUrlChange: (String) -> Unit,
+    onDownloadDialogues: () -> Unit,
     onOpen: (AudiobookOpenRequest) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -163,10 +170,6 @@ internal fun AudiobooksContent(
                 uiState.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
-                uiState.books.isEmpty() -> AudiobooksMessage(
-                    title = stringResource(R.string.audiobooks_empty_title),
-                    body = stringResource(R.string.audiobooks_empty_body),
-                )
                 uiState.isSearching && uiState.results.isEmpty() -> AudiobooksMessage(
                     title = stringResource(R.string.reader_no_search_results),
                     body = stringResource(R.string.audiobooks_no_results_body),
@@ -219,8 +222,26 @@ internal fun AudiobooksContent(
                             )
                         }
                     }
+                    if (uiState.dialogueLibraryUrl.isNotBlank()) {
+                        item(key = "dialogue-library") {
+                            DialogueLibraryRow(
+                                state = uiState.dialogueLibrary,
+                                horizontalPaddingDp = layoutSpec.pageHorizontalPaddingDp,
+                                onDownload = onDownloadDialogues,
+                            )
+                        }
+                    }
                     item(key = "today-divider") {
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
+                    if (uiState.books.isEmpty()) {
+                        item(key = "empty") {
+                            AudiobooksMessage(
+                                title = stringResource(R.string.audiobooks_empty_title),
+                                body = stringResource(R.string.audiobooks_empty_body),
+                                modifier = Modifier.fillParentMaxWidth(),
+                            )
+                        }
                     }
                     uiState.books.forEach { book ->
                         val expanded = book.id in uiState.expandedBookIds
@@ -254,9 +275,11 @@ internal fun AudiobooksContent(
     }
     if (showStudyListDialog) {
         StudyListDialog(
-            url = uiState.studyListUrl,
-            onSave = { url ->
-                onStudyListUrlChange(url)
+            studyListUrl = uiState.studyListUrl,
+            dialogueLibraryUrl = uiState.dialogueLibraryUrl,
+            onSave = { studyListUrl, dialogueLibraryUrl ->
+                onStudyListUrlChange(studyListUrl)
+                onDialogueLibraryUrlChange(dialogueLibraryUrl)
                 showStudyListDialog = false
             },
             onDismiss = { showStudyListDialog = false },
@@ -307,7 +330,7 @@ private fun AudiobooksTodayHeader(
         IconButton(onClick = onEditStudyList) {
             Icon(
                 Icons.Rounded.Settings,
-                contentDescription = stringResource(R.string.audiobooks_study_list_title),
+                contentDescription = stringResource(R.string.audiobooks_links_title),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -315,33 +338,109 @@ private fun AudiobooksTodayHeader(
 }
 
 @Composable
+private fun DialogueLibraryRow(
+    state: DialogueLibraryState,
+    horizontalPaddingDp: Int,
+    onDownload: () -> Unit,
+) {
+    val message = when (state) {
+        is DialogueLibraryState.Idle ->
+            if (state.newBooks == 0) return
+            else pluralStringResource(R.plurals.audiobooks_library_new, state.newBooks, state.newBooks)
+        is DialogueLibraryState.Downloading ->
+            if (state.total == 0) stringResource(R.string.audiobooks_library_checking)
+            else stringResource(R.string.audiobooks_library_downloading, state.current, state.total)
+        DialogueLibraryState.Failed -> stringResource(R.string.audiobooks_library_failed)
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = horizontalPaddingDp.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f),
+            )
+            when (state) {
+                is DialogueLibraryState.Idle -> FilledTonalButton(onClick = onDownload) {
+                    Text(stringResource(R.string.action_download))
+                }
+                DialogueLibraryState.Failed -> FilledTonalButton(onClick = onDownload) {
+                    Text(stringResource(R.string.audiobooks_library_retry))
+                }
+                is DialogueLibraryState.Downloading -> Unit
+            }
+        }
+        if (state is DialogueLibraryState.Downloading) {
+            if (state.total == 0) {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            } else {
+                LinearProgressIndicator(
+                    progress = { (state.current - 1).coerceAtLeast(0) / state.total.toFloat() },
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun StudyListDialog(
-    url: String,
-    onSave: (String) -> Unit,
+    studyListUrl: String,
+    dialogueLibraryUrl: String,
+    onSave: (studyListUrl: String, dialogueLibraryUrl: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val urlState = rememberTextFieldState(url)
+    val studyListState = rememberTextFieldState(studyListUrl)
+    val dialogueLibraryState = rememberTextFieldState(dialogueLibraryUrl)
+    val save = { onSave(studyListState.text.toString(), dialogueLibraryState.text.toString()) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.audiobooks_study_list_title)) },
+        title = { Text(stringResource(R.string.audiobooks_links_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text(stringResource(R.string.audiobooks_study_list_body, StudyListDatePlaceholder))
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
                 OutlinedTextField(
-                    state = urlState,
+                    state = studyListState,
                     modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.audiobooks_study_list_title)) },
                     placeholder = { Text(stringResource(R.string.audiobooks_study_list_placeholder)) },
                     lineLimits = hoshiSingleLineTextFieldLineLimits(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
-                    onKeyboardAction = { onSave(urlState.text.toString()) },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
                     colors = hoshiOutlinedTextFieldColors(),
+                )
+                Text(
+                    text = stringResource(R.string.audiobooks_study_list_body, StudyListDatePlaceholder),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    state = dialogueLibraryState,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(stringResource(R.string.audiobooks_library_title)) },
+                    placeholder = { Text(stringResource(R.string.audiobooks_library_placeholder)) },
+                    lineLimits = hoshiSingleLineTextFieldLineLimits(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
+                    onKeyboardAction = { save() },
+                    colors = hoshiOutlinedTextFieldColors(),
+                )
+                Text(
+                    text = stringResource(R.string.audiobooks_library_body),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },
         confirmButton = {
-            TextButton(onClick = { onSave(urlState.text.toString()) }) {
-                Text(stringResource(R.string.action_save))
-            }
+            TextButton(onClick = save) { Text(stringResource(R.string.action_save)) }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
@@ -459,10 +558,10 @@ private fun AudiobookChapterRow(
 private fun AudiobooksMessage(
     title: String,
     body: String,
+    modifier: Modifier = Modifier.fillMaxSize(),
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
             .padding(horizontal = 32.dp, vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
