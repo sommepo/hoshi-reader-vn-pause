@@ -1,6 +1,7 @@
 package moe.antimony.hoshi.features.audiobooks
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -109,7 +110,15 @@ private fun JsonElement.studyListId(): String? =
         else -> null
     }
 
-private fun fetchStudyList(url: String): String {
+private fun fetchStudyList(url: String): String =
+    try {
+        requestStudyList(url)
+    } catch (error: Exception) {
+        Log.w("StudyList", "Unable to load the study list", error)
+        throw error
+    }
+
+private fun requestStudyList(url: String): String {
     val connection = URL(url).openConnection() as HttpURLConnection
     try {
         connection.connectTimeout = 8_000
