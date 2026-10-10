@@ -26,18 +26,24 @@ internal class ImportDirectoryScanner<T>(
     private val tree: ImportDirectoryTree<T>,
 ) {
     fun scan(rootKey: T, type: ImportFileType): List<ImportDirectoryFile<T>> =
-        buildList {
-            collect(directoryKey = rootKey, prefix = "", type = type, output = this)
-        }.sortedWith(
-            compareBy<ImportDirectoryFile<T>> { it.displayName.lowercase() }
-                .thenBy { it.displayName },
-        )
+        scan(rootKey, listOf(type)).getValue(type)
+
+    /** Walks the tree once and returns the files of each requested type. */
+    fun scan(rootKey: T, types: List<ImportFileType>): Map<ImportFileType, List<ImportDirectoryFile<T>>> {
+        val output = types.associateWith { mutableListOf<ImportDirectoryFile<T>>() }
+        collect(directoryKey = rootKey, prefix = "", output = output)
+        return output.mapValues { (_, files) ->
+            files.sortedWith(
+                compareBy<ImportDirectoryFile<T>> { it.displayName.lowercase() }
+                    .thenBy { it.displayName },
+            )
+        }
+    }
 
     private fun collect(
         directoryKey: T,
         prefix: String,
-        type: ImportFileType,
-        output: MutableList<ImportDirectoryFile<T>>,
+        output: Map<ImportFileType, MutableList<ImportDirectoryFile<T>>>,
     ) {
         tree.children(directoryKey).forEach { child ->
             val displayName = child.name.takeIf { it.isNotBlank() } ?: return@forEach
@@ -47,13 +53,11 @@ internal class ImportDirectoryScanner<T>(
                 child.isDirectory -> collect(
                     directoryKey = child.key,
                     prefix = relativeName,
-                    type = type,
                     output = output,
                 )
-                type.matchesDisplayName(displayName) -> output += ImportDirectoryFile(
-                    key = child.key,
-                    displayName = relativeName,
-                )
+                else -> output.entries.firstOrNull { (type, _) -> type.matchesDisplayName(displayName) }
+                    ?.value
+                    ?.add(ImportDirectoryFile(key = child.key, displayName = relativeName))
             }
         }
     }
@@ -62,10 +66,13 @@ internal class ImportDirectoryScanner<T>(
 internal class SafImportDirectoryScanner(
     private val contentResolver: ContentResolver,
 ) {
-    fun scan(treeUri: Uri, type: ImportFileType): List<ImportDirectoryFile<Uri>> {
+    fun scan(treeUri: Uri, type: ImportFileType): List<ImportDirectoryFile<Uri>> =
+        scan(treeUri, listOf(type)).getValue(type)
+
+    fun scan(treeUri: Uri, types: List<ImportFileType>): Map<ImportFileType, List<ImportDirectoryFile<Uri>>> {
         val rootDocumentId = DocumentsContract.getTreeDocumentId(treeUri)
         val rootDocumentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, rootDocumentId)
-        return ImportDirectoryScanner(SafImportDirectoryTree(contentResolver, treeUri)).scan(rootDocumentUri, type)
+        return ImportDirectoryScanner(SafImportDirectoryTree(contentResolver, treeUri)).scan(rootDocumentUri, types)
     }
 }
 

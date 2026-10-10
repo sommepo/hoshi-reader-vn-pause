@@ -25,6 +25,8 @@ import moe.antimony.hoshi.ui.UiText
 internal data class BookImportItem(
     val uri: Uri,
     val displayName: String? = null,
+    val subtitleUri: Uri? = null,
+    val audioUri: Uri? = null,
 )
 
 internal data class PendingBookImport(
@@ -190,7 +192,7 @@ internal class BookshelfViewModel : ViewModel {
                     importKey = import.uri.toString(),
                     displayName = import.displayName,
                 ) {
-                    repository.importBook(import.uri)
+                    repository.importBookBundle(import.uri, import.subtitleUri, import.audioUri)
                 }
             }
         }

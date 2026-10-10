@@ -27,6 +27,7 @@ import moe.antimony.hoshi.epub.isUuidString
 import moe.antimony.hoshi.features.sync.StatisticsSyncMode
 import moe.antimony.hoshi.features.sync.DriveAuthStatus
 import moe.antimony.hoshi.features.sync.DriveAuthorizer
+import moe.antimony.hoshi.features.sasayaki.SasayakiCompanionImporter
 import moe.antimony.hoshi.features.sync.DriveSyncDataSource
 import moe.antimony.hoshi.features.sync.GoogleDriveApiException
 import moe.antimony.hoshi.features.sync.SyncDirection
@@ -57,6 +58,8 @@ internal interface BookshelfRepository {
     suspend fun loadRemoteBooks(localEntries: List<BookEntry>): RemoteBookshelfLoadResult
     suspend fun openBook(entry: BookEntry): String
     suspend fun importBook(uri: Uri): String
+    /** Imports the EPUB and attaches the subtitle and audiobook found next to it, when given. */
+    suspend fun importBookBundle(bookUri: Uri, subtitleUri: Uri?, audioUri: Uri?): String
     suspend fun exportBook(entry: BookEntry, uri: Uri)
     suspend fun importRemoteBook(
         entry: RemoteBookEntry,
@@ -101,6 +104,7 @@ internal class AndroidBookshelfRepository @Inject constructor(
     private val ttuBookDataConverter: TtuBookDataConverter,
     private val bookParser: EpubBookParser,
     private val bookCoverThumbnailStore: BookCoverThumbnailStore,
+    private val sasayakiCompanionImporter: SasayakiCompanionImporter,
     @param:CacheDir private val cacheDir: File,
     @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : BookshelfRepository {
@@ -150,12 +154,22 @@ internal class AndroidBookshelfRepository @Inject constructor(
         readerBookId(entry.root)
     }
 
-    override suspend fun importBook(uri: Uri): String = withContext(ioDispatcher) {
-        val root = bookRepository.importBook(contentResolver, uri)
+    override suspend fun importBook(uri: Uri): String =
+        importBookBundle(bookUri = uri, subtitleUri = null, audioUri = null)
+
+    override suspend fun importBookBundle(
+        bookUri: Uri,
+        subtitleUri: Uri?,
+        audioUri: Uri?,
+    ): String = withContext(ioDispatcher) {
+        val root = bookRepository.importBook(contentResolver, bookUri)
         val parsedBook = bookParser.parse(root)
         saveMetadata(root, parsedBook, bookRepository.loadMetadata(root))
         saveBookInfo(root, parsedBook)
         prewarmBookCover(root)
+        if (subtitleUri != null || audioUri != null) {
+            sasayakiCompanionImporter.attach(root, parsedBook, subtitleUri, audioUri)
+        }
         readerBookId(root)
     }
 

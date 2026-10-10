@@ -56,6 +56,34 @@ class ImportDirectoryScannerTest {
         )
     }
 
+    @Test
+    fun findsSeveralFileTypesInOneWalk() {
+        val tree = FakeImportDirectoryTree(
+            "root" to listOf(
+                file("book", "521.epub"),
+                file("subtitle", "521.srt"),
+                file("audio", "521.m4b"),
+                file("notes", "521.txt"),
+            ),
+        )
+
+        val files = ImportDirectoryScanner(tree).scan(
+            "root",
+            listOf(ImportFileType.Epub, ImportFileType.SasayakiSubtitle, ImportFileType.SasayakiAudiobook),
+        )
+
+        assertEquals(
+            mapOf(
+                ImportFileType.Epub to listOf(ImportDirectoryFile(key = "book", displayName = "521.epub")),
+                ImportFileType.SasayakiSubtitle to
+                    listOf(ImportDirectoryFile(key = "subtitle", displayName = "521.srt")),
+                ImportFileType.SasayakiAudiobook to
+                    listOf(ImportDirectoryFile(key = "audio", displayName = "521.m4b")),
+            ),
+            files,
+        )
+    }
+
     private class FakeImportDirectoryTree(
         vararg entries: Pair<String, List<ImportDirectoryDocument<String>>>,
     ) : ImportDirectoryTree<String> {

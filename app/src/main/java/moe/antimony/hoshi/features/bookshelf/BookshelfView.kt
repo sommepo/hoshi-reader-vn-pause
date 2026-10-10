@@ -137,6 +137,7 @@ import moe.antimony.hoshi.importing.DirectoryImportContent
 import moe.antimony.hoshi.importing.ImportFileType
 import moe.antimony.hoshi.importing.MultipleFileImportContent
 import moe.antimony.hoshi.importing.SafImportDirectoryScanner
+import moe.antimony.hoshi.importing.planBookImportBundles
 import moe.antimony.hoshi.profiles.ProfileState
 import moe.antimony.hoshi.importing.importDisplayName
 import moe.antimony.hoshi.ui.HoshiBlockingProgressOverlay
@@ -210,10 +211,30 @@ fun BookshelfView(
         if (uri == null) return@rememberLauncherForActivityResult
         booksViewModel.importBookFolderItems {
             withContext(Dispatchers.IO) {
-                folderScanner.scan(uri, ImportFileType.Epub).map { file ->
+                val files = folderScanner.scan(
+                    uri,
+                    listOf(ImportFileType.Epub, ImportFileType.SasayakiSubtitle, ImportFileType.SasayakiAudiobook),
+                )
+                val bundles = planBookImportBundles(
+                    books = files.getValue(ImportFileType.Epub),
+                    subtitles = files.getValue(ImportFileType.SasayakiSubtitle),
+                    audio = files.getValue(ImportFileType.SasayakiAudiobook),
+                )
+                if (bundles.any { it.audio != null }) {
+                    // Audiobooks left in place are played from the folder later, so keep access to it.
+                    runCatching {
+                        context.contentResolver.takePersistableUriPermission(
+                            uri,
+                            Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                        )
+                    }
+                }
+                bundles.map { bundle ->
                     BookImportItem(
-                        uri = file.key,
-                        displayName = file.displayName,
+                        uri = bundle.book.key,
+                        displayName = bundle.book.displayName,
+                        subtitleUri = bundle.subtitle?.key,
+                        audioUri = bundle.audio?.key,
                     )
                 }
             }
