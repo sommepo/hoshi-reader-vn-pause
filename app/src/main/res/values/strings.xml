@@ -55,6 +55,15 @@
     <string name="audiobooks_expand_book">Show chapters</string>
     <string name="audiobooks_collapse_book">Hide chapters</string>
     <string name="audiobooks_resume_book">Continue listening</string>
+    <string name="audiobooks_today_title" comment="Audiobooks tab section listing the chapters for the IDs studied today.">Today</string>
+    <string name="audiobooks_today_setup">Add a study list link to see today\'s chapters here.</string>
+    <string name="audiobooks_today_loading">Loading today\'s study list…</string>
+    <string name="audiobooks_today_failed">Couldn\'t load today\'s study list.</string>
+    <string name="audiobooks_today_empty">Nothing on today\'s study list yet.</string>
+    <string name="audiobooks_today_missing" comment="Placeholder is a comma-separated list of ID numbers.">No audiobook chapter for: %1$s</string>
+    <string name="audiobooks_study_list_title">Study list link</string>
+    <string name="audiobooks_study_list_body" comment="Placeholder is the literal token the user types where the date belongs, for example {date}.">Link to a JSON list of the ID numbers studied today. Chapters whose titles start with those numbers are shown under Today. Write %1$s where today\'s date (YYYY-MM-DD) belongs.</string>
+    <string name="audiobooks_study_list_placeholder" translatable="false">https://example.com/today?date={date}</string>
     <plurals name="audiobooks_chapter_count">
         <item quantity="one">%1$d chapter</item>
         <item quantity="other">%1$d chapters</item>

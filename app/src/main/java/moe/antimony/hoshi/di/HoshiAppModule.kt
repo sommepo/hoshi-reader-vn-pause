@@ -19,6 +19,8 @@ import moe.antimony.hoshi.features.anki.AnkiSettingsRepository
 import moe.antimony.hoshi.features.anki.ankiSettingsRepository
 import moe.antimony.hoshi.features.audio.AudioSettingsRepository
 import moe.antimony.hoshi.features.audio.audioSettingsRepository
+import moe.antimony.hoshi.features.audiobooks.StudyListDataStore
+import moe.antimony.hoshi.features.audiobooks.studyListDataStore
 import moe.antimony.hoshi.features.bookshelf.BookshelfSettingsRepository
 import moe.antimony.hoshi.features.bookshelf.bookshelfSettingsRepository
 import moe.antimony.hoshi.features.dictionary.DictionarySettingsRepository
@@ -136,6 +138,11 @@ internal object HoshiAppModule {
         drive: DriveSyncDataSource,
     ): SyncSettingsRepository =
         context.syncSettingsRepository(drive)
+
+    @Provides
+    @Singleton
+    fun provideStudyListDataStore(@ApplicationContext context: Context): StudyListDataStore =
+        context.studyListDataStore()
 
     @Provides
     @Singleton

@@ -55,6 +55,14 @@
     <string name="audiobooks_expand_book">显示章节</string>
     <string name="audiobooks_collapse_book">隐藏章节</string>
     <string name="audiobooks_resume_book">继续收听</string>
+    <string name="audiobooks_today_title" comment="Audiobooks tab section listing the chapters for the IDs studied today.">今天</string>
+    <string name="audiobooks_today_setup">添加学习列表链接后，今天的章节会显示在这里。</string>
+    <string name="audiobooks_today_loading">正在加载今天的学习列表…</string>
+    <string name="audiobooks_today_failed">无法加载今天的学习列表。</string>
+    <string name="audiobooks_today_empty">今天的学习列表还没有内容。</string>
+    <string name="audiobooks_today_missing" comment="Placeholder is a comma-separated list of ID numbers.">以下编号没有对应的有声书章节：%1$s</string>
+    <string name="audiobooks_study_list_title">学习列表链接</string>
+    <string name="audiobooks_study_list_body" comment="Placeholder is the literal token the user types where the date belongs, for example {date}.">指向今天所学编号的 JSON 列表的链接。标题以这些编号开头的章节会显示在“今天”下。在需要填入今天日期（YYYY-MM-DD）的位置写 %1$s。</string>
     <plurals name="audiobooks_chapter_count">
         <item quantity="one">%1$d 章</item>
         <item quantity="other">%1$d 章</item>

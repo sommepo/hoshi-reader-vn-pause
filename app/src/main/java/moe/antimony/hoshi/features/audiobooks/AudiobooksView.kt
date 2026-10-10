@@ -21,6 +21,14 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ExpandLess
@@ -87,6 +95,7 @@ internal fun AudiobooksView(
         layoutSpec = layoutSpec,
         onQueryChange = viewModel::onQueryChange,
         onToggleBook = viewModel::onToggleBook,
+        onStudyListUrlChange = viewModel::onStudyListUrlChange,
         onOpen = onOpen,
         modifier = modifier,
     )
@@ -98,9 +107,11 @@ internal fun AudiobooksContent(
     layoutSpec: MainShellLayoutSpec,
     onQueryChange: (String) -> Unit,
     onToggleBook: (String) -> Unit,
+    onStudyListUrlChange: (String) -> Unit,
     onOpen: (AudiobookOpenRequest) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showStudyListDialog by remember { mutableStateOf(false) }
     val keyboard = LocalSoftwareKeyboardController.current
     val queryScrollState = rememberScrollState()
     // State-based field so IME composition (kana to kanji) is never interrupted by a state round trip.
@@ -185,6 +196,32 @@ internal fun AudiobooksContent(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(bottom = 24.dp),
                 ) {
+                    item(key = "today") {
+                        AudiobooksTodayHeader(
+                            today = uiState.today,
+                            horizontalPaddingDp = layoutSpec.pageHorizontalPaddingDp,
+                            onEditStudyList = { showStudyListDialog = true },
+                        )
+                    }
+                    (uiState.today as? AudiobooksTodayState.Loaded)?.let { today ->
+                        itemsIndexed(
+                            items = today.list.chapters,
+                            key = { index, _ -> "today:$index" },
+                        ) { _, result ->
+                            AudiobookChapterRow(
+                                label = result.chapter.label,
+                                supporting = result.bookTitle.takeIf {
+                                    uiState.books.size > 1 && it != result.chapter.label
+                                },
+                                horizontalPaddingDp = layoutSpec.pageHorizontalPaddingDp,
+                                indentLevel = 0,
+                                onClick = { onOpen(AudiobookOpenRequest(result.bookId, result.chapter.startCharacter)) },
+                            )
+                        }
+                    }
+                    item(key = "today-divider") {
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    }
                     uiState.books.forEach { book ->
                         val expanded = book.id in uiState.expandedBookIds
                         item(key = "book:${book.id}") {
@@ -215,6 +252,101 @@ internal fun AudiobooksContent(
             }
         }
     }
+    if (showStudyListDialog) {
+        StudyListDialog(
+            url = uiState.studyListUrl,
+            onSave = { url ->
+                onStudyListUrlChange(url)
+                showStudyListDialog = false
+            },
+            onDismiss = { showStudyListDialog = false },
+        )
+    }
+}
+
+@Composable
+private fun AudiobooksTodayHeader(
+    today: AudiobooksTodayState,
+    horizontalPaddingDp: Int,
+    onEditStudyList: () -> Unit,
+) {
+    val note = when (today) {
+        AudiobooksTodayState.Unset -> stringResource(R.string.audiobooks_today_setup)
+        AudiobooksTodayState.Loading -> stringResource(R.string.audiobooks_today_loading)
+        AudiobooksTodayState.Failed -> stringResource(R.string.audiobooks_today_failed)
+        is AudiobooksTodayState.Loaded -> when {
+            today.list.missingIds.isNotEmpty() -> stringResource(
+                R.string.audiobooks_today_missing,
+                today.list.missingIds.joinToString(separator = ", "),
+            )
+            today.list.chapters.isEmpty() -> stringResource(R.string.audiobooks_today_empty)
+            else -> null
+        }
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = horizontalPaddingDp.dp, end = (horizontalPaddingDp - 12).coerceAtLeast(0).dp)
+            .padding(top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.audiobooks_today_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            if (note != null) {
+                Text(
+                    text = note,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        IconButton(onClick = onEditStudyList) {
+            Icon(
+                Icons.Rounded.Settings,
+                contentDescription = stringResource(R.string.audiobooks_study_list_title),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun StudyListDialog(
+    url: String,
+    onSave: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val urlState = rememberTextFieldState(url)
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.audiobooks_study_list_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(R.string.audiobooks_study_list_body, StudyListDatePlaceholder))
+                OutlinedTextField(
+                    state = urlState,
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text(stringResource(R.string.audiobooks_study_list_placeholder)) },
+                    lineLimits = hoshiSingleLineTextFieldLineLimits(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
+                    onKeyboardAction = { onSave(urlState.text.toString()) },
+                    colors = hoshiOutlinedTextFieldColors(),
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onSave(urlState.text.toString()) }) {
+                Text(stringResource(R.string.action_save))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
+        },
+    )
 }
 
 @Composable

@@ -206,6 +206,19 @@ refactor goals belong in `docs/ARCHITECTURE_REFACTORING.md`.
   book titles, chapter titles, and chapter text behind `AudiobooksViewModel`.
   Its reader routes live on the Audiobooks back stack and carry the start
   character, Audiobook-mode session flag, and autoplay request.
+- The Audiobooks tab's Today section is driven by `StudyListRepository`, which
+  keeps one user-entered link in its own DataStore, replaces `{date}` with the
+  device's local calendar day, and reads a JSON list of ID numbers (a plain
+  list, or `offered`/`ids`/`studied`/`points`, optionally inside `day`).
+  `studyListChapters` matches those IDs against the leading number of chapter
+  titles, or of the book title for a single-dialogue book. The list is fetched
+  again each time the tab resumes; a failed fetch keeps the last list.
+- Folder import walks the SAF tree once for EPUB, `.srt`, and audiobook files.
+  `planBookImportBundles` pairs each EPUB with the companions beside it by file
+  name, name extension, leading ID number, or sole-candidate rule, and
+  `SasayakiCompanionImporter` runs the subtitle match and attaches the audio
+  through the Sasayaki sidecars without replacing an existing match or audio
+  source. Audio left in place is read through the persisted folder grant.
 - Sasayaki accepts MP3, M4B, and Ogg Opus audiobook sources. One repository
   inspection returns format, metadata, chapters, and static duration for
   seekable sources before playback starts. M4B inspection reads MP4 metadata, `moov/udta/chpl`, and

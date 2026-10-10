@@ -182,6 +182,10 @@ Validate relevant bookshelf/import changes with:
 - Settings detail open/return behavior, confirming returning from a detail route
   lands back on Settings without changing top-level tab state.
 - multi-EPUB DocumentsUI import and recursive EPUB folder import.
+- folder import of EPUBs stored beside same-named `.srt` and audiobook files,
+  confirming each book opens with its subtitle match and audio attached, with
+  Copy to Private Storage both on and off, and that importing the same folder
+  again leaves existing matches, audio, and playback positions unchanged.
 - external EPUB open/import requests, confirming the request is consumed once
   and routes to Reader after import succeeds.
 - shelf-name entry, including user shelves named Reading alongside the virtual
@@ -327,6 +331,10 @@ Validate relevant sync/update/Sasayaki changes with:
   spoken text, a chapter result opens at that chapter and starts playing its
   first line, the book play button resumes the saved audio position, and Back
   returns to the tab with the query intact.
+- Audiobooks tab Today section: with no study list link it shows the setup
+  note; after saving a link it lists the chapters for that day's IDs in study
+  order, names IDs that have no chapter, refreshes when the tab is reopened,
+  and keeps the last list when the server cannot be reached.
 - Sasayaki linked and copied Ogg Opus playback with `testdata/opus_test.opus`.
   Confirm its title and artist metadata, all 22 `CHAPTERnnn` chapter entries,
   current-chapter centering without first flashing the default list position

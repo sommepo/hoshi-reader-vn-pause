@@ -23,6 +23,14 @@ Historical release notes before v1.3.0 live in [CHANGELOG_ARCHIVE.md](CHANGELOG_
 - Add an Audiobooks tab that lists every book with Sasayaki audio and searches
   book titles, chapter titles, ID numbers, and the spoken text. Tapping a
   chapter opens it in Audiobook mode and starts playing from its first line.
+  A Today section at the top can follow a study list link: it lists the
+  chapters whose ID numbers were studied that day, in study order, and names
+  the IDs that have no audiobook chapter yet.
+- Import folder now sets up Sasayaki on its own: an `.srt` subtitle and an MP3,
+  M4B, or Opus audiobook stored beside an EPUB with the same file name or the
+  same leading ID number are matched and attached while the book is imported.
+  Importing the folder again adds only the books, subtitles, and audio that
+  are still missing.
 
 ## [v1.3.3] - 2026-08-13
 

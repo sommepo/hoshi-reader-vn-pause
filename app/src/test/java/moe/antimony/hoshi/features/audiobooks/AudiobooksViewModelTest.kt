@@ -4,6 +4,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -96,6 +98,7 @@ class AudiobooksViewModelTest {
             library = object : AudiobookLibrarySource {
                 override suspend fun loadLibrary(): List<AudiobookLibraryBook> = error("unreadable")
             },
+            studyList = FakeStudyList(),
             searchDispatcher = Dispatchers.Unconfined,
             coroutineScope = scope,
         )
@@ -106,11 +109,75 @@ class AudiobooksViewModelTest {
         assertEquals(emptyList<AudiobookLibraryBook>(), viewModel.uiState.value.books)
     }
 
-    private fun viewModel(books: List<AudiobookLibraryBook>) =
+    @Test
+    fun todayIsUnsetUntilAStudyListLinkIsSaved() {
+        val studyList = FakeStudyList(ids = listOf("43", "999", "42"))
+        val viewModel = viewModel(listOf(n3, n2), studyList)
+        viewModel.reload()
+        assertEquals(AudiobooksTodayState.Unset, viewModel.uiState.value.today)
+
+        viewModel.onStudyListUrlChange("https://study.example/today?date={date}")
+
+        val state = viewModel.uiState.value
+        assertEquals("https://study.example/today?date={date}", state.studyListUrl)
+        val today = (state.today as AudiobooksTodayState.Loaded).list
+        assertEquals(listOf("043 〜ておく", "042 〜てしまう"), today.chapters.map { it.chapter.label })
+        assertEquals(listOf("999"), today.missingIds)
+    }
+
+    @Test
+    fun todayIsFetchedAgainOnReloadAndKeepsTheLastListWhenTheFetchFails() {
+        val studyList = FakeStudyList(url = "https://study.example/today", ids = listOf("42"))
+        val viewModel = viewModel(listOf(n3), studyList)
+        viewModel.reload()
+
+        studyList.ids = listOf("42", "43")
+        viewModel.reload()
+        assertEquals(
+            listOf("042 〜てしまう", "043 〜ておく"),
+            (viewModel.uiState.value.today as AudiobooksTodayState.Loaded).list.chapters.map { it.chapter.label },
+        )
+
+        studyList.ids = null
+        viewModel.reload()
+        assertEquals(
+            listOf("042 〜てしまう", "043 〜ておく"),
+            (viewModel.uiState.value.today as AudiobooksTodayState.Loaded).list.chapters.map { it.chapter.label },
+        )
+    }
+
+    @Test
+    fun todayReportsAFailureWhenTheListHasNeverLoaded() {
+        val viewModel = viewModel(listOf(n3), FakeStudyList(url = "https://study.example/today", ids = null))
+
+        viewModel.reload()
+
+        assertEquals(AudiobooksTodayState.Failed, viewModel.uiState.value.today)
+    }
+
+    private class FakeStudyList(
+        url: String = "",
+        var ids: List<String>? = emptyList(),
+    ) : StudyListSource {
+        private val urlState = MutableStateFlow(url)
+        override val url: Flow<String> = urlState
+
+        override suspend fun setUrl(url: String) {
+            urlState.value = url
+        }
+
+        override suspend fun loadToday(url: String): List<String> = ids ?: error("offline")
+    }
+
+    private fun viewModel(
+        books: List<AudiobookLibraryBook>,
+        studyList: StudyListSource = FakeStudyList(),
+    ) =
         AudiobooksViewModel(
             library = object : AudiobookLibrarySource {
                 override suspend fun loadLibrary(): List<AudiobookLibraryBook> = books
             },
+            studyList = studyList,
             searchDispatcher = Dispatchers.Unconfined,
             coroutineScope = scope,
         )
