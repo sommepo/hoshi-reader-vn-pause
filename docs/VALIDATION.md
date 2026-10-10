@@ -335,6 +335,14 @@ Validate relevant sync/update/Sasayaki changes with:
   note; after saving a link it lists the chapters for that day's IDs in study
   order, names IDs that have no chapter, refreshes when the tab is reopened,
   and keeps the last list when the server cannot be reached.
+- Grammar tab: the setup form saves a link, the page loads without its site
+  rail and keeps its own account, theme, and quiz state across app restarts,
+  example audio plays, links to other pages of the server open outside the
+  app, Back steps through opened grammar points, Play dialogue appears only on
+  points with an audiobook chapter and opens it in Audiobook mode, the school
+  icon on a Today row opens that point, and the page returns to the same point
+  after switching tabs. With the server unreachable, the error state offers
+  Try again and Change link.
 - Audiobooks tab library download: with a library link the tab shows the count
   of new books, Download imports each with subtitle match and audio attached
   and playable offline, a second check reports nothing new, and a book deleted

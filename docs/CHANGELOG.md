@@ -8,6 +8,11 @@ Historical release notes before v1.3.0 live in [CHANGELOG_ARCHIVE.md](CHANGELOG_
 
 ### Added
 
+- Add a Grammar tab that shows a grammar library page from your own server, so
+  search, levels, progress, and quizzes are the same in the app and in a
+  browser. A grammar point with a dialogue in your audiobooks gets a Play
+  dialogue button, and Today rows on the Audiobooks tab open their grammar
+  point.
 - Add Push to Continue: in Visual Novel mode, pause when the current screen's
   audiobook finishes. Blank-area taps pause or play only when no dictionary
   lookup is open; after that screen's audio ends, a blank tap goes to the next

@@ -18,7 +18,9 @@
 
 ## 这个 fork 是什么
 
-Hoshi Reader Android 的非官方 fork。保留上游的日语 EPUB 阅读器（Yomitan 查词、Anki 制卡、Sasayaki 有声书跟读、VN 模式、墨水屏），并增加一项阅读功能：**Push to Continue**（点击继续）。
+Hoshi Reader Android 的非官方 fork，集读书与语法学习伴侣于一体。保留上游的日语 EPUB 阅读器（Yomitan 查词、Anki 制卡、Sasayaki 有声书跟读、VN 模式、墨水屏），并增加 **Push to Continue**（点击继续）、逐句的**有声书模式**，以及可配合自建语法库使用的**语法**标签页。
+
+**语法**标签页直接显示你服务器上的语法库页面，搜索、JLPT 等级、进度和测验与浏览器中完全一致；有对应对话的语法点会出现“播放对话”按钮。有声书标签页的“今天”列出当天所学语法点的对话，并可从服务器文件夹下载新书（字幕和音频自动配好）。书库的“导入文件夹”也会自动配对同名的 EPUB、`.srt` 和音频。这些功能都需要粘贴链接才会启用。
 
 Debug APK 会作为 **Hoshi Debug**（`moe.antimony.hoshi.debug`）安装在官方 Hoshi **旁边**，不会覆盖官方 App，也不共用书库。
 

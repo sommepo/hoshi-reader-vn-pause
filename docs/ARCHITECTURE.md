@@ -11,7 +11,7 @@ refactor goals belong in `docs/ARCHITECTURE_REFACTORING.md`.
 - The app is a single Android application module under `app`.
 - UI is Jetpack Compose + Material 3.
 - Navigation uses Navigation3 typed route keys, `AppShell`, and `NavDisplay`.
-  Top-level Books, Audiobooks, Dictionary, Statistics, and Settings tabs each own an
+  Top-level Books, Audiobooks, Grammar, Dictionary, Statistics, and Settings tabs each own an
   independent Nav3 back stack with its own saveable entry state and per-entry
   ViewModel stores. The shared main navigation chrome is owned by a Nav3 scene
   decorator around top-level root scenes, while Reader and Settings detail
@@ -213,6 +213,16 @@ refactor goals belong in `docs/ARCHITECTURE_REFACTORING.md`.
   `studyListChapters` matches those IDs against the leading number of chapter
   titles, or of the book title for a single-dialogue book. The list is fetched
   again each time the tab resumes; a failed fetch keeps the last list.
+- The Grammar tab hosts a user-entered grammar library page in a WebView
+  (`GrammarView`); the page and its server stay the single owner of grammar
+  content, progress, and quizzes, and nothing of them is stored in the app.
+  Main-frame navigation is kept inside the page's own folder
+  (`grammarPageContains`); other links open outside the app.
+  `hoshi-web/grammar/grammar-embed.js` is evaluated only on that page: it hides
+  the page's site rail and reports the open grammar point (`#<id>`) through the
+  `HoshiGrammar` bridge. `GrammarViewModel` resolves that ID to an audiobook
+  chapter with `studyListChapters` for the Play dialogue button, and `AppShell`
+  carries a grammar point request from the Audiobooks tab to the Grammar tab.
 - `DialogueLibraryRepository` reads a second user-entered link: a JSON index
   (`files` with `name`, `size`, `modified`) of a server folder. It pairs the
   listed files with `planBookImportBundles`, downloads each new book's files to

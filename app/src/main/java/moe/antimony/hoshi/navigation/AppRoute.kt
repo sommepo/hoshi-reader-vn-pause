@@ -15,6 +15,9 @@ sealed interface AppRoute : NavKey {
     data object AudiobooksRoute : AppRoute
 
     @Serializable
+    data object GrammarRoute : AppRoute
+
+    @Serializable
     data object DictionaryRoute : AppRoute
 
     @Serializable

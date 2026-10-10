@@ -18,7 +18,7 @@
 
 ## What this fork is
 
-An unofficial fork of Hoshi Reader Android. It keeps the upstream Japanese EPUB reader (Yomitan lookup, Anki mining, Sasayaki audiobook read-along, VN mode, e-ink) and adds one extra reading mode: **Push to Continue**.
+An unofficial fork of Hoshi Reader Android that is a book reader and a grammar study companion in one. It keeps the upstream Japanese EPUB reader (Yomitan lookup, Anki mining, Sasayaki audiobook read-along, VN mode, e-ink) and adds **Push to Continue**, a line-by-line **Audiobook mode**, and a **Grammar** tab that works with a grammar library on your own server.
 
 The debug APK installs **next to** official Hoshi as **Hoshi Debug** (`moe.antimony.hoshi.debug`). It does not replace the official app or share its library.
 
@@ -46,6 +46,15 @@ Books that work best with it:
 - One EPUB per collection, with one XHTML file and one table-of-contents entry per dialogue. Put the ID in the entry title, for example `N3-042 〜てしまう`; searching `42`, `n3 42` or `てしまう` then finds it.
 - One paragraph per spoken line.
 - One audio file (MP3, M4B or Opus) and one SRT for the whole book, added from the Sasayaki menu. Each SRT cue should hold the text of one line, in book order.
+
+## Grammar companion
+
+The fork can work alongside a self-hosted grammar library (a web page that tracks studied grammar points by ID number, with quizzes and a study schedule). None of this is needed for ordinary reading; each part is switched on by pasting a link.
+
+- The **Grammar** tab shows the grammar page itself, so search, JLPT levels, progress and quizzes are the same in the app and in a browser, and are saved in the same place. On a grammar point that has a dialogue in your audiobooks, **Play dialogue** opens it in Audiobook mode.
+- **Today** on the Audiobooks tab lists the dialogues for the grammar points studied that day; the school icon on a row opens that point in the Grammar tab. It reads a JSON list of ID numbers from the **study list link** (`{date}` is replaced by the day, `YYYY-MM-DD`).
+- The **audiobook library link** points at the `index.json` of a server folder holding EPUB, `.srt` and audio files of the same name. New books are downloaded from the tab with subtitles and audio already set up.
+- **Import folder** on Books does the same pairing for a folder on the device.
 
 <div align="center">
 

@@ -72,7 +72,7 @@
         <item quantity="one">%1$d new book in the library</item>
         <item quantity="other">%1$d new books in the library</item>
     </plurals>
-    <string name="audiobooks_library_retry">Try again</string>
+    <string name="action_try_again">Try again</string>
     <string name="audiobooks_library_checking">Checking the library…</string>
     <string name="audiobooks_library_downloading" comment="Placeholders are the book being downloaded and the total number of books.">Downloading book %1$d of %2$d…</string>
     <string name="audiobooks_library_failed">Couldn\'t reach the audiobook library.</string>
@@ -80,6 +80,15 @@
         <item quantity="one">%1$d chapter</item>
         <item quantity="other">%1$d chapters</item>
     </plurals>
+    <string name="main_tab_grammar">Grammar</string>
+    <string name="grammar_setup_title">Add your grammar page</string>
+    <string name="grammar_setup_body">The Grammar tab shows a grammar library page from your own server, so study progress and quizzes are the same here and in a browser. Paste the page\'s link to begin.</string>
+    <string name="grammar_link_title">Grammar page link</string>
+    <string name="grammar_link_placeholder" translatable="false">https://example.com/grammar/</string>
+    <string name="grammar_link_change">Change link</string>
+    <string name="grammar_page_failed">Couldn\'t open the grammar page.</string>
+    <string name="grammar_play_dialogue">Play dialogue</string>
+    <string name="grammar_open_point">Open grammar point</string>
     <string name="main_tab_dictionary">Dictionary</string>
     <string name="main_tab_statistics" comment="Main navigation tab label, intentionally matching statistics page titles.">Statistics</string>
     <string name="main_tab_settings" comment="Main navigation tab label, intentionally matching settings page titles.">Settings</string>

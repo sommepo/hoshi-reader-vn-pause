@@ -70,7 +70,7 @@
         <item quantity="one">书库中有 %1$d 本新书</item>
         <item quantity="other">书库中有 %1$d 本新书</item>
     </plurals>
-    <string name="audiobooks_library_retry">重试</string>
+    <string name="action_try_again">重试</string>
     <string name="audiobooks_library_checking">正在检查书库…</string>
     <string name="audiobooks_library_downloading" comment="Placeholders are the book being downloaded and the total number of books.">正在下载第 %1$d 本，共 %2$d 本…</string>
     <string name="audiobooks_library_failed">无法连接有声书库。</string>
@@ -78,6 +78,14 @@
         <item quantity="one">%1$d 章</item>
         <item quantity="other">%1$d 章</item>
     </plurals>
+    <string name="main_tab_grammar">语法</string>
+    <string name="grammar_setup_title">添加你的语法页面</string>
+    <string name="grammar_setup_body">“语法”标签页显示你自己服务器上的语法库页面，因此这里和浏览器中的学习进度与测验保持一致。粘贴页面链接即可开始。</string>
+    <string name="grammar_link_title">语法页面链接</string>
+    <string name="grammar_link_change">更改链接</string>
+    <string name="grammar_page_failed">无法打开语法页面。</string>
+    <string name="grammar_play_dialogue">播放对话</string>
+    <string name="grammar_open_point">打开语法点</string>
     <string name="main_tab_dictionary">查词</string>
     <string name="main_tab_statistics" comment="Main navigation tab label, intentionally matching statistics page titles.">统计</string>
     <string name="main_tab_settings" comment="Main navigation tab label, intentionally matching settings page titles.">设置</string>

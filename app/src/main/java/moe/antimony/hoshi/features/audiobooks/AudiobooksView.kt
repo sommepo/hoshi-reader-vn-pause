@@ -35,6 +35,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.ExpandLess
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.School
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
@@ -81,6 +82,7 @@ data class AudiobookOpenRequest(
 internal fun AudiobooksView(
     layoutSpec: MainShellLayoutSpec,
     onOpen: (AudiobookOpenRequest) -> Unit,
+    onOpenGrammarCard: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: AudiobooksViewModel = hiltViewModel(),
 ) {
@@ -102,6 +104,7 @@ internal fun AudiobooksView(
         onDialogueLibraryUrlChange = viewModel::onDialogueLibraryUrlChange,
         onDownloadDialogues = viewModel::onDownloadDialogues,
         onOpen = onOpen,
+        onOpenGrammarCard = onOpenGrammarCard,
         modifier = modifier,
     )
 }
@@ -116,6 +119,7 @@ internal fun AudiobooksContent(
     onDialogueLibraryUrlChange: (String) -> Unit,
     onDownloadDialogues: () -> Unit,
     onOpen: (AudiobookOpenRequest) -> Unit,
+    onOpenGrammarCard: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var showStudyListDialog by remember { mutableStateOf(false) }
@@ -219,6 +223,8 @@ internal fun AudiobooksContent(
                                 horizontalPaddingDp = layoutSpec.pageHorizontalPaddingDp,
                                 indentLevel = 0,
                                 onClick = { onOpen(AudiobookOpenRequest(result.bookId, result.chapter.startCharacter)) },
+                                onOpenGrammarCard = studyListChapterIds(result.chapter.label).firstOrNull()
+                                    ?.let { id -> { onOpenGrammarCard(id) } },
                             )
                         }
                     }
@@ -372,7 +378,7 @@ private fun DialogueLibraryRow(
                     Text(stringResource(R.string.action_download))
                 }
                 DialogueLibraryState.Failed -> FilledTonalButton(onClick = onDownload) {
-                    Text(stringResource(R.string.audiobooks_library_retry))
+                    Text(stringResource(R.string.action_try_again))
                 }
                 is DialogueLibraryState.Downloading -> Unit
             }
@@ -514,6 +520,7 @@ private fun AudiobookChapterRow(
     horizontalPaddingDp: Int,
     indentLevel: Int,
     onClick: () -> Unit,
+    onOpenGrammarCard: (() -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier
@@ -543,6 +550,15 @@ private fun AudiobookChapterRow(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                )
+            }
+        }
+        if (onOpenGrammarCard != null) {
+            IconButton(onClick = onOpenGrammarCard) {
+                Icon(
+                    imageVector = Icons.Rounded.School,
+                    contentDescription = stringResource(R.string.grammar_open_point),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }

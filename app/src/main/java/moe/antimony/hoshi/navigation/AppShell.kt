@@ -37,6 +37,7 @@ import moe.antimony.hoshi.features.anki.AnkiAdvancedView
 import moe.antimony.hoshi.features.anki.AnkiCardFormatView
 import moe.antimony.hoshi.features.audiobooks.AudiobookOpenRequest
 import moe.antimony.hoshi.features.audiobooks.AudiobooksView
+import moe.antimony.hoshi.features.grammar.GrammarView
 import moe.antimony.hoshi.features.bookshelf.BookshelfView
 import moe.antimony.hoshi.features.bookshelf.MainTab
 import moe.antimony.hoshi.features.bookshelf.SettingsDestination
@@ -85,6 +86,8 @@ fun AppShell(
     var selectedTab by rememberSaveable { mutableStateOf(MainTab.Books) }
     val booksBackStack = rememberNavBackStack(AppRoute.BooksRoute)
     val audiobooksBackStack = rememberNavBackStack(AppRoute.AudiobooksRoute)
+    val grammarBackStack = rememberNavBackStack(AppRoute.GrammarRoute)
+    var grammarCardRequest by rememberSaveable { mutableStateOf<String?>(null) }
     val dictionaryBackStack = rememberNavBackStack(AppRoute.DictionaryRoute)
     val statisticsBackStack = rememberNavBackStack(AppRoute.StatisticsRoute)
     val settingsBackStack = rememberNavBackStack(AppRoute.SettingsRoute)
@@ -135,6 +138,7 @@ fun AppShell(
     fun selectedBackStack(): MutableList<NavKey> = when (effectiveSelectedTab) {
         MainTab.Books -> booksBackStack
         MainTab.Audiobooks -> audiobooksBackStack
+        MainTab.Grammar -> grammarBackStack
         MainTab.Dictionary -> dictionaryBackStack
         MainTab.Statistics -> statisticsBackStack
         MainTab.Settings -> settingsBackStack
@@ -257,6 +261,11 @@ fun AppShell(
         )
     }
 
+    fun openGrammarCard(id: String) {
+        grammarCardRequest = id
+        selectedTab = MainTab.Grammar
+    }
+
     fun returnToSasayakiReader(bookId: String) {
         if (audiobooksBackStack.isShowingReaderFor(bookId)) {
             selectedTab = MainTab.Audiobooks
@@ -303,6 +312,9 @@ fun AppShell(
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
                     onOpenAudiobook = ::openAudiobook,
+                    onOpenGrammarCard = ::openGrammarCard,
+                    grammarCardRequest = grammarCardRequest,
+                    onGrammarCardRequestConsumed = { grammarCardRequest = null },
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -314,6 +326,23 @@ fun AppShell(
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
                     onOpenAudiobook = ::openAudiobook,
+                    onOpenGrammarCard = ::openGrammarCard,
+                    grammarCardRequest = grammarCardRequest,
+                    onGrammarCardRequestConsumed = { grammarCardRequest = null },
+                    bookshelfRefreshKey = bookshelfRefreshKey,
+                    dictionaryFocusRequestKey = dictionaryFocusRequestKey,
+                )
+                AppRoute.GrammarRoute -> TopLevelRouteContent(
+                    selectedTab = MainTab.Grammar,
+                    pendingImportUri = currentPendingImportUri,
+                    onPendingImportConsumed = currentOnPendingImportConsumed,
+                    readerSettings = currentReaderSettings,
+                    onReaderSettingsChange = currentOnReaderSettingsChange,
+                    onOpenReader = ::openReader,
+                    onOpenAudiobook = ::openAudiobook,
+                    onOpenGrammarCard = ::openGrammarCard,
+                    grammarCardRequest = grammarCardRequest,
+                    onGrammarCardRequestConsumed = { grammarCardRequest = null },
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -325,6 +354,9 @@ fun AppShell(
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
                     onOpenAudiobook = ::openAudiobook,
+                    onOpenGrammarCard = ::openGrammarCard,
+                    grammarCardRequest = grammarCardRequest,
+                    onGrammarCardRequestConsumed = { grammarCardRequest = null },
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -336,6 +368,9 @@ fun AppShell(
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
                     onOpenAudiobook = ::openAudiobook,
+                    onOpenGrammarCard = ::openGrammarCard,
+                    grammarCardRequest = grammarCardRequest,
+                    onGrammarCardRequestConsumed = { grammarCardRequest = null },
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -347,6 +382,9 @@ fun AppShell(
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
                     onOpenAudiobook = ::openAudiobook,
+                    onOpenGrammarCard = ::openGrammarCard,
+                    grammarCardRequest = grammarCardRequest,
+                    onGrammarCardRequestConsumed = { grammarCardRequest = null },
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                     onSettingsDestination = { destination ->
@@ -408,6 +446,9 @@ fun AppShell(
                     onReaderSettingsChange = currentOnReaderSettingsChange,
                     onOpenReader = ::openReader,
                     onOpenAudiobook = ::openAudiobook,
+                    onOpenGrammarCard = ::openGrammarCard,
+                    grammarCardRequest = grammarCardRequest,
+                    onGrammarCardRequestConsumed = { grammarCardRequest = null },
                     bookshelfRefreshKey = bookshelfRefreshKey,
                     dictionaryFocusRequestKey = dictionaryFocusRequestKey,
                 )
@@ -429,6 +470,11 @@ fun AppShell(
         entryDecorators = rememberAppNavEntryDecorators(),
         entryProvider = entryProvider,
     )
+    val grammarEntries = rememberDecoratedNavEntries(
+        backStack = grammarBackStack,
+        entryDecorators = rememberAppNavEntryDecorators(),
+        entryProvider = entryProvider,
+    )
     val dictionaryEntries = rememberDecoratedNavEntries(
         backStack = dictionaryBackStack,
         entryDecorators = rememberAppNavEntryDecorators(),
@@ -447,6 +493,7 @@ fun AppShell(
     val currentEntries = when (effectiveSelectedTab) {
         MainTab.Books -> booksEntries
         MainTab.Audiobooks -> audiobooksEntries
+        MainTab.Grammar -> grammarEntries
         MainTab.Dictionary -> dictionaryEntries
         MainTab.Statistics -> statisticsEntries
         MainTab.Settings -> settingsEntries
@@ -492,6 +539,9 @@ private fun TopLevelRouteContent(
     onReaderSettingsChange: (ReaderSettings) -> Unit,
     onOpenReader: (String) -> Unit,
     onOpenAudiobook: (AudiobookOpenRequest) -> Unit,
+    onOpenGrammarCard: (String) -> Unit,
+    grammarCardRequest: String?,
+    onGrammarCardRequestConsumed: () -> Unit,
     bookshelfRefreshKey: Int,
     dictionaryFocusRequestKey: Int,
     onSettingsDestination: (SettingsDestination) -> Unit = {},
@@ -509,6 +559,13 @@ private fun TopLevelRouteContent(
         MainTab.Audiobooks -> AudiobooksView(
             layoutSpec = layoutSpec,
             onOpen = onOpenAudiobook,
+            onOpenGrammarCard = onOpenGrammarCard,
+            modifier = Modifier.fillMaxSize(),
+        )
+        MainTab.Grammar -> GrammarView(
+            cardRequest = grammarCardRequest,
+            onCardRequestConsumed = onGrammarCardRequestConsumed,
+            onOpenAudiobook = onOpenAudiobook,
             modifier = Modifier.fillMaxSize(),
         )
         MainTab.Dictionary -> DictionarySearchView(
@@ -593,6 +650,7 @@ private fun SettingsDetailDestination(
 private fun MainTab.toRoute(): AppRoute = when (this) {
     MainTab.Books -> AppRoute.BooksRoute
     MainTab.Audiobooks -> AppRoute.AudiobooksRoute
+    MainTab.Grammar -> AppRoute.GrammarRoute
     MainTab.Dictionary -> AppRoute.DictionaryRoute
     MainTab.Statistics -> AppRoute.StatisticsRoute
     MainTab.Settings -> AppRoute.SettingsRoute
@@ -637,6 +695,7 @@ internal fun normalizeStatisticsBackStackForVisibleTabs(
 private fun AppRoute.toMainTab(): MainTab = when (this) {
     AppRoute.MainRoute, AppRoute.BooksRoute -> MainTab.Books
     AppRoute.AudiobooksRoute -> MainTab.Audiobooks
+    AppRoute.GrammarRoute -> MainTab.Grammar
     AppRoute.DictionaryRoute -> MainTab.Dictionary
     AppRoute.StatisticsRoute -> MainTab.Statistics
     AppRoute.SettingsRoute -> MainTab.Settings

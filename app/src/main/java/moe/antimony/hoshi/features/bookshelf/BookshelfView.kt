@@ -61,6 +61,7 @@ import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.ReportProblem
 import androidx.compose.material.icons.rounded.Headphones
+import androidx.compose.material.icons.rounded.School
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material3.AlertDialog
@@ -2310,6 +2311,7 @@ private fun BottomTabGlyph(tab: MainTab, modifier: Modifier = Modifier) {
     val icon = when (tab) {
         MainTab.Books -> Icons.AutoMirrored.Rounded.MenuBook
         MainTab.Audiobooks -> Icons.Rounded.Headphones
+        MainTab.Grammar -> Icons.Rounded.School
         MainTab.Dictionary -> Icons.Rounded.Translate
         MainTab.Statistics -> Icons.AutoMirrored.Rounded.ShowChart
         MainTab.Settings -> Icons.Rounded.Settings
